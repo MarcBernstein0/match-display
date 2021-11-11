@@ -1,26 +1,39 @@
 package businesslogic
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"bytes"
+	"io"
+	"net/http"
+	"os"
 	"reflect"
 	"testing"
+
+	"github.com/MarcBernstein0/match-display/ulits/mocks"
 )
 
+var mockClient *mocks.MockClient
+
+func init() {
+	mockClient = &mocks.MockClient{}
+}
+
 func TestGetTournaments(t *testing.T) {
-	testData, err := ioutil.ReadFile("./test-data/testTournamentData.json")
+	testData, err := os.ReadFile("./test-data/testTournamentData.json")
 	if err != nil {
 		t.Errorf("Failed to read the test file\n%v\n", err)
 	}
-	var data []map[string]map[string]interface{}
-	if err = json.Unmarshal([]byte(testData), &data); err != nil {
-		t.Errorf("Failed to unmarshal json data\n%v\n", err)
-	}
+
 	expectedResult := map[int]string{
 		3953832:  "Guilty Gear -Strive-",
 		10469768: "Melty Blood: Type Lumina",
 	}
-	mapResult, err := getTournaments()
+	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       io.NopCloser(bytes.NewReader(testData)),
+		}, nil
+	}
+	mapResult, err := getTournaments(mockClient)
 	if err != nil {
 		t.Errorf("getTournaments failed\n%v\n", err)
 	}
