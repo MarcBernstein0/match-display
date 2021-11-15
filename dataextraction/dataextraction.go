@@ -1,4 +1,4 @@
-package businesslogic
+package dataextraction
 
 import (
 	"encoding/json"

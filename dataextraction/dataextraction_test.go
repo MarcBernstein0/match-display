@@ -1,4 +1,4 @@
-package businesslogic
+package dataextraction
 
 import (
 	"bytes"
@@ -74,4 +74,27 @@ func TestGetParticipants(t *testing.T) {
 			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
 		}
 	})
+
+	// expectedResult2expectedResult2 := map[int]string{
+	// 	158464100: "Marc",
+	// 	158464107: "KosherSalt",
+	// 	158464116: "Bernstein",
+	// 	158464118: "Test",
+	// 	158464119: "Test2",
+	// 	158464121: "Test3",
+	// 	158464124: "Test4",
+	// 	158464101: "Marc",
+	// 	158464102: "KosherSalt",
+	// 	158464113: "Bernstein",
+	// 	158464114: "Test",
+	// 	158464115: "Test2",
+	// 	158464126: "Test3",
+	// 	158464127: "Test4",
+	// }
+
+	// testData2, err := os.ReadFile("./test-data/testParticipantsData2.json")
+	// if err != nil {
+	// 	t.Errorf("Failed to read the test file\n%v\n", err)
+	// }
+
 }
