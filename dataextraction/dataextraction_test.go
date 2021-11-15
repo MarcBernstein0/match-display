@@ -2,10 +2,12 @@ package dataextraction
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/MarcBernstein0/match-display/ulits/mocks"
@@ -40,6 +42,57 @@ func TestGetTournaments(t *testing.T) {
 	if !reflect.DeepEqual(expectedResult, mapResult) {
 		t.Fatalf("Tournamet list did not come back the same. Expected=%v, got=%v\n", expectedResult, mapResult)
 	}
+}
+
+func TestMultipleApiCalls(t *testing.T) {
+	// mock data and client
+	testData, err := os.ReadFile("./test-data/testMultipleApiCalls.json")
+	if err != nil {
+		t.Errorf("Failed to read the test file\n%v\n", err)
+	}
+	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       io.NopCloser(bytes.NewReader(testData)),
+		}, nil
+	}
+
+	// expected result
+	var expectedResult []map[string]map[string]interface{}
+	if err = json.Unmarshal([]byte(testData), &expectedResult); err != nil {
+		t.Errorf("failed to unmarshal json data\n%v", err)
+	}
+
+	// test channels
+	testResultChan := make(chan result)
+
+	// test waitgoup
+	testWaitGroup := new(sync.WaitGroup)
+	testWaitGroup.Add(1)
+	go challongeApiMultiCall(
+		10469768,
+		mockClient,
+		"tournaments/10469768/participants",
+		nil,
+		testResultChan,
+		testWaitGroup,
+	)
+
+	go func() {
+		testWaitGroup.Wait()
+		close(testResultChan)
+	}()
+
+	for res := range testResultChan {
+		if res.err != nil {
+			t.Errorf("getMultipleApiCalls failed\n%v\n", res.err)
+		}
+		if !reflect.DeepEqual(res.data, expectedResult) {
+			t.Fatalf("Expected result did not match result. Expected=%v, got=%v\n", expectedResult, res)
+		}
+
+	}
+
 }
 
 func TestGetParticipants(t *testing.T) {
