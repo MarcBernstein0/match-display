@@ -39,16 +39,16 @@ func init() {
 	client = &http.Client{}
 }
 
-/* Generic function that builds and http request. Only builds get requests as no post calls will happen
+/* Generic function that calls the cahllonge api and returns the body of the response. Only builds get requests as no post calls will happen
 args:
 	apiPath string path of the api call
 	params map[string]string all the parameters that will be passed into the
 	                             request where key is the parameter and value is the parameter value
 return:
-	*http.Request the fully built request ready to be sent
+	map[string]map[string]interface{} the fully built request ready to be sent
 	error errors that occur when building the request
 */
-func httpQueryBuilder(apiPath string, params map[string]string) (*http.Request, error) {
+func challongeApiCall(client HTTPClient, apiPath string, params map[string]string) ([]map[string]map[string]interface{}, error) {
 	fullAPIPath := fmt.Sprintf("%s/%s.json", API_URL, apiPath)
 	req, err := http.NewRequest("GET", fullAPIPath, nil)
 	if err != nil {
@@ -61,7 +61,21 @@ func httpQueryBuilder(apiPath string, params map[string]string) (*http.Request, 
 		q.Add(k, v)
 	}
 	req.URL.RawQuery = q.Encode()
-	return req, nil
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to received response from challonge api. \n%v", err)
+	}
+	defer res.Body.Close()
+	resData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error when reading response body.\n%v", err)
+	}
+	var tData []map[string]map[string]interface{}
+	if err = json.Unmarshal([]byte(resData), &tData); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal json data\n%v", err)
+	}
+	return tData, nil
+
 }
 
 /* calls challenonge api to get all running tournaments
@@ -83,33 +97,21 @@ func getTournaments(client HTTPClient) (map[int]string, error) {
 	}
 
 	// create request to client
-	req, err := httpQueryBuilder("tournaments", params)
+	tData, err := challongeApiCall(client, "tournaments", params)
 	if err != nil {
-		return nil, fmt.Errorf("req failed in getTouranments call\n. %v", err)
+		return nil, fmt.Errorf("request failed in getTournaments\n. %v", err)
 	}
 
-	// call api client and handle response
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("response from api failed.\n%v", err)
-	}
-	defer res.Body.Close()
-	resData, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error when reading response body.\n%v", err)
-	}
-	var tData []map[string]map[string]interface{}
-	if err = json.Unmarshal([]byte(resData), &tData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal json data\n%v", err)
-	}
 	for _, elem := range tData {
 		if tournamentID, ok := elem["tournament"]["id"].(float64); ok {
 
 			if gameName, ok := elem["tournament"]["game_name"].(string); ok {
 				tournaments[int(tournamentID)] = gameName
+			} else {
+				return nil, fmt.Errorf("type for game_name did not match what was expected. Expected='string' got=%T", gameName)
 			}
 		} else {
-			return nil, fmt.Errorf("type for tournament ID did not match what was expected. Expected='float64' got=%T", elem["tournament"]["id"])
+			return nil, fmt.Errorf("type for tournament ID did not match what was expected. Expected='float64' got=%T", tournamentID)
 		}
 	}
 
@@ -117,15 +119,35 @@ func getTournaments(client HTTPClient) (map[int]string, error) {
 }
 
 func getParticipants(tournaments map[int]string, client HTTPClient) (map[int]string, error) {
+	participants := make(map[int]string)
 	apiPath := fmt.Sprintf("tournaments/%s/participants", "10469768")
-	req, err := httpQueryBuilder(apiPath, nil)
+	parData, err := challongeApiCall(client, apiPath, nil)
 	if err != nil {
-		return nil, fmt.Errorf("req failed in getTouranments call\n. %v", err)
+		return nil, fmt.Errorf("request failed in getTouranments call\n. %v", err)
 	}
-	fmt.Println(req.URL.String())
-	return nil, nil
+
+	for _, elem := range parData {
+		if participantID, ok := elem["participant"]["id"].(float64); ok {
+
+			if name, ok := elem["participant"]["name"].(string); ok {
+				participants[int(participantID)] = name
+			} else {
+				return nil, fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
+			}
+		} else {
+			return nil, fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
+		}
+	}
+
+	return participants, nil
 }
 
 func TestIntegration() {
 	fmt.Println(getTournaments(client))
+	fmt.Println(getParticipants(
+		map[int]string{
+			10469768: "Test2",
+		},
+		client,
+	))
 }

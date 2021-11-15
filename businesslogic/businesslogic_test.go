@@ -65,11 +65,13 @@ func TestGetParticipants(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewReader(testData)),
 		}, nil
 	}
-	participantsResults, err := getParticipants(mockTournaments, mockClient)
-	if err != nil {
-		t.Errorf("getParticipants failed\n%v\n", err)
-	}
-	if !reflect.DeepEqual(expectedResult, participantsResults) {
-		t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
-	}
+	t.Run("Get Participants from one tournament", func(t *testing.T) {
+		participantsResults, err := getParticipants(mockTournaments, mockClient)
+		if err != nil {
+			t.Errorf("getParticipants failed\n%v\n", err)
+		}
+		if !reflect.DeepEqual(expectedResult, participantsResults) {
+			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
+		}
+	})
 }
