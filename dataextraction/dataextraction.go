@@ -74,7 +74,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	if err != nil {
 		return result{
 			data: nil,
-			err:  fmt.Errorf("failed to received response from challonge api. \n%v", err)}
+			err:  fmt.Errorf("failed to received response from challonge api.\n%v", err)}
 	}
 	defer res.Body.Close()
 	resData, err := ioutil.ReadAll(res.Body)
@@ -98,7 +98,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 
 }
 
-func challongeApiMultiCall(tournament int, client HTTPClient, apiPath string, params map[string]string, resultsChan chan<- result, wg *sync.WaitGroup) {
+func challongeApiMultiCall(client HTTPClient, apiPath string, params map[string]string, resultsChan chan<- result, wg *sync.WaitGroup) {
 	defer wg.Done()
 	res := challongeApiCall(client, apiPath, params)
 	resultsChan <- res
@@ -125,7 +125,7 @@ func getTournaments(client HTTPClient) (map[int]string, error) {
 	// create request to client
 	res := challongeApiCall(client, "tournaments", params)
 	if res.err != nil {
-		return nil, fmt.Errorf("request failed in getTournaments\n. %v", res.err)
+		return nil, fmt.Errorf("request failed in getTournaments.\n%v", res.err)
 	}
 
 	for _, elem := range res.data {
@@ -146,30 +146,41 @@ func getTournaments(client HTTPClient) (map[int]string, error) {
 
 func getParticipants(tournaments map[int]string, client HTTPClient) (map[int]string, error) {
 	participants := make(map[int]string)
+	allApiResult := make([]result, 0)
 
-	// cResponse := make(chan []map[string]map[string]interface{})
-	// cError := make(chan error)
-	// var wg sync.WaitGroup
-	// for k, v := range tournaments {
-	// 	wg.Add(1) // tells the waitgroup that there is no 1 pending operation
-	// }
-
-	apiPath := fmt.Sprintf("tournaments/%s/participants", "10469768")
-	res := challongeApiCall(client, apiPath, nil)
-	if res.err != nil {
-		return nil, fmt.Errorf("request failed in getTouranments call\n. %v", res.err)
+	cResponse := make(chan result)
+	var wg sync.WaitGroup
+	for k, v := range tournaments {
+		wg.Add(1) // tells the waitgroup that there is no 1 pending operation
+		apiPath := fmt.Sprintf("tournaments/%d/participants", k)
+		fmt.Println(v)
+		go challongeApiMultiCall(client, apiPath, nil, cResponse, &wg)
 	}
 
-	for _, elem := range res.data {
-		if participantID, ok := elem["participant"]["id"].(float64); ok {
+	go func() {
+		wg.Wait()
+		close(cResponse)
+	}()
 
-			if name, ok := elem["participant"]["name"].(string); ok {
-				participants[int(participantID)] = name
+	for resultsApi := range cResponse {
+		if resultsApi.err != nil {
+			return nil, fmt.Errorf("request failed in getParticipants call.\n%v", resultsApi.err)
+		}
+		allApiResult = append(allApiResult, resultsApi)
+	}
+
+	for _, res := range allApiResult {
+		for _, elem := range res.data {
+			if participantID, ok := elem["participant"]["id"].(float64); ok {
+
+				if name, ok := elem["participant"]["name"].(string); ok {
+					participants[int(participantID)] = name
+				} else {
+					return nil, fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
+				}
 			} else {
-				return nil, fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
+				return nil, fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
 			}
-		} else {
-			return nil, fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
 		}
 	}
 

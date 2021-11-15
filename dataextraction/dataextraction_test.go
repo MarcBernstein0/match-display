@@ -3,6 +3,7 @@ package dataextraction
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -70,7 +71,6 @@ func TestMultipleApiCalls(t *testing.T) {
 	testWaitGroup := new(sync.WaitGroup)
 	testWaitGroup.Add(1)
 	go challongeApiMultiCall(
-		10469768,
 		mockClient,
 		"tournaments/10469768/participants",
 		nil,
@@ -118,6 +118,7 @@ func TestGetParticipants(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewReader(testData)),
 		}, nil
 	}
+
 	t.Run("Get Participants from one tournament", func(t *testing.T) {
 		participantsResults, err := getParticipants(mockTournaments, mockClient)
 		if err != nil {
@@ -125,6 +126,19 @@ func TestGetParticipants(t *testing.T) {
 		}
 		if !reflect.DeepEqual(expectedResult, participantsResults) {
 			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
+		}
+	})
+	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
+		return nil, errors.New("Testing error failure")
+	}
+	t.Run("Get paritipants error occurs", func(t *testing.T) {
+		_, err := getParticipants(mockTournaments, mockClient)
+		if err != nil {
+			if err.Error() != "request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure" {
+				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure', got=%v\n", err)
+			}
+		} else {
+			t.Fatalf("Error came back empty\n")
 		}
 	})
 
