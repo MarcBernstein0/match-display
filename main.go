@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/MarcBernstein0/match-display/dataextraction"
+	"github.com/MarcBernstein0/match-display/businesslogic"
 )
 
 func main() {
 	fmt.Println("Running program")
-	dataextraction.TestIntegration()
+	businesslogic.GetTournamentData()
 }
