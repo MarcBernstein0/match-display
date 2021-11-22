@@ -99,14 +99,14 @@ func TestGetParticipants(t *testing.T) {
 	mockTournaments := map[int]string{
 		10469768: "Melty Blood: Type Lumina",
 	}
-	expectedResult := map[int]string{
-		158464100: "Marc",
-		158464107: "KosherSalt",
-		158464116: "Bernstein",
-		158464118: "Test",
-		158464119: "Test2",
-		158464121: "Test3",
-		158464124: "Test4",
+	expectedResult := map[string][]int{
+		"Marc":       {158464100},
+		"KosherSalt": {158464107},
+		"Bernstein":  {158464116},
+		"test":       {158464118},
+		"test2":      {158464119},
+		"test3":      {158464121},
+		"test4":      {158464124},
 	}
 	testData, err := os.ReadFile("./test-data/testParticipantsData.json")
 	if err != nil {

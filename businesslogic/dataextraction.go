@@ -45,8 +45,8 @@ func getTournaments(client HTTPClient) (map[int]string, error) {
 	return tournaments, nil
 }
 
-func getParticipants(tournaments map[int]string, client HTTPClient) (map[int]string, error) {
-	participants := make(map[int]string)
+func getParticipants(tournaments map[int]string, client HTTPClient) (map[string][]int, error) {
+	participants := make(map[string][]int)
 	allApiResult := make([]result, 0)
 
 	cResponse := make(chan result)
@@ -72,15 +72,15 @@ func getParticipants(tournaments map[int]string, client HTTPClient) (map[int]str
 
 	for _, res := range allApiResult {
 		for _, elem := range res.data {
-			if participantID, ok := elem["participant"]["id"].(float64); ok {
+			if name, ok := elem["participant"]["name"].(string); ok {
 
-				if name, ok := elem["participant"]["name"].(string); ok {
-					participants[int(participantID)] = name
+				if participantID, ok := elem["participant"]["id"].(float64); ok {
+					participants[name] = append(participants[name], int(participantID))
 				} else {
-					return nil, fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
+					return nil, fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
 				}
 			} else {
-				return nil, fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
+				return nil, fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
 			}
 		}
 	}
@@ -92,8 +92,10 @@ func GetTournamentData() {
 	fmt.Println(getTournaments(client))
 	fmt.Println(getParticipants(
 		map[int]string{
+			3953832:  "Test",
 			10469768: "Test2",
 		},
 		client,
 	))
+
 }
