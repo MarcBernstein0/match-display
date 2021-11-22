@@ -128,6 +128,36 @@ func TestGetParticipants(t *testing.T) {
 			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
 		}
 	})
+
+	mockMultipleTournaments := map[int]string{
+		10469768: "Melty Blood: Type Lumina",
+		10469769: "Melty Blood: Type Lumina",
+	}
+
+	expectedResult2expectedResult2 := map[string][]int{
+		"Marc":       {158464100, 158464100},
+		"KosherSalt": {158464107, 158464107},
+		"Bernstein":  {158464116, 158464116},
+		"test":       {158464118, 158464118},
+		"test2":      {158464119, 158464119},
+		"test3":      {158464121, 158464121},
+		"test4":      {158464124, 158464124},
+	}
+
+	// testData2, err := os.ReadFile("./test-data/testParticipantsData2.json")
+	// if err != nil {
+	// 	t.Errorf("Failed to read the test file\n%v\n", err)
+	// }
+	t.Run("Get participants from multiple tournaments", func(t *testing.T) {
+		participantsResults, err := getParticipants(mockMultipleTournaments, mockClient)
+		if err != nil {
+			t.Errorf("getParticipants failed\n%v\n", err)
+		}
+		if !reflect.DeepEqual(expectedResult2expectedResult2, participantsResults) {
+			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult2expectedResult2, participantsResults)
+		}
+	})
+
 	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, errors.New("Testing error failure")
 	}
@@ -141,27 +171,5 @@ func TestGetParticipants(t *testing.T) {
 			t.Fatalf("Error came back empty\n")
 		}
 	})
-
-	// expectedResult2expectedResult2 := map[int]string{
-	// 	158464100: "Marc",
-	// 	158464107: "KosherSalt",
-	// 	158464116: "Bernstein",
-	// 	158464118: "Test",
-	// 	158464119: "Test2",
-	// 	158464121: "Test3",
-	// 	158464124: "Test4",
-	// 	158464101: "Marc",
-	// 	158464102: "KosherSalt",
-	// 	158464113: "Bernstein",
-	// 	158464114: "Test",
-	// 	158464115: "Test2",
-	// 	158464126: "Test3",
-	// 	158464127: "Test4",
-	// }
-
-	// testData2, err := os.ReadFile("./test-data/testParticipantsData2.json")
-	// if err != nil {
-	// 	t.Errorf("Failed to read the test file\n%v\n", err)
-	// }
 
 }
