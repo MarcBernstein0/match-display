@@ -26,16 +26,20 @@ func TestGetTournaments(t *testing.T) {
 		t.Errorf("Failed to read the test file\n%v\n", err)
 	}
 
-	expectedResult := map[int]tournament{
-		3953832: {
-			tournamentID:   3953832,
-			tournamentGame: "Guilty Gear -Strive-",
-			participants:   make(map[string]int),
-		},
-		10469768: {
-			tournamentID:   10469768,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants:   make(map[string]int),
+	expectedResult := &tournaments{
+		tournamentList: map[int]tournament{
+			3953832: {
+				tournamentID:       3953832,
+				tournamentGame:     "Guilty Gear -Strive-",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
+			10469768: {
+				tournamentID:       10469768,
+				tournamentGame:     "Melty Blood: Type Lumina",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
 		},
 	}
 	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
@@ -49,7 +53,7 @@ func TestGetTournaments(t *testing.T) {
 		t.Errorf("getTournaments failed\n%v\n", err)
 	}
 	if !reflect.DeepEqual(expectedResult, tournamentsResult) {
-		t.Fatalf("Tournamet list did not come back the same. Expected=%v, got=%v\n", expectedResult, tournamentsResult)
+		t.Fatalf("Tournamet list did not come back the same. Expected=%+v, got=%+v\n", expectedResult, tournamentsResult)
 	}
 }
 
@@ -104,25 +108,40 @@ func TestMultipleApiCalls(t *testing.T) {
 }
 
 func TestGetParticipants(t *testing.T) {
-	mockTournaments := map[int]tournament{
-		10469768: {
-			tournamentID:   10469768,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants:   make(map[string]int),
+	mockTournaments := tournaments{
+		tournamentList: map[int]tournament{
+			10469768: {
+				tournamentID:       10469768,
+				tournamentGame:     "Melty Blood: Type Lumina",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
 		},
 	}
-	expectedResult := map[int]tournament{
-		10469768: {
-			tournamentID:   10469768,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants: map[string]int{
-				"Marc":       158464100,
-				"KosherSalt": 158464107,
-				"Bernstein":  158464116,
-				"test":       158464118,
-				"test2":      158464119,
-				"test3":      158464121,
-				"test4":      158464124,
+
+	expectedResult := tournaments{
+		map[int]tournament{
+			10469768: {
+				tournamentID:   10469768,
+				tournamentGame: "Melty Blood: Type Lumina",
+				participantsByName: map[string]int{
+					"Marc":       158464100,
+					"KosherSalt": 158464107,
+					"Bernstein":  158464116,
+					"test":       158464118,
+					"test2":      158464119,
+					"test3":      158464121,
+					"test4":      158464124,
+				},
+				participantsByID: map[int]string{
+					158464100: "Marc",
+					158464107: "KosherSalt",
+					158464116: "Bernstein",
+					158464118: "test",
+					158464119: "test2",
+					158464121: "test3",
+					158464124: "test4",
+				},
 			},
 		},
 	}
@@ -139,56 +158,72 @@ func TestGetParticipants(t *testing.T) {
 	}
 
 	t.Run("Get Participants from one tournament", func(t *testing.T) {
-		participantsResults, err := getParticipants(mockTournaments, mockClient)
+		err := mockTournaments.getParticipants(mockClient)
 		if err != nil {
 			t.Errorf("getParticipants failed\n%v\n", err)
 		}
-		if !reflect.DeepEqual(expectedResult, participantsResults) {
-			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, participantsResults)
+		if !reflect.DeepEqual(expectedResult, mockTournaments) {
+			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResult, mockTournaments)
 		}
 	})
 
-	mockMultipleTournaments := map[int]tournament{
-		10469768: {
-			tournamentID:   10469768,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants:   make(map[string]int),
-		},
-		10469769: {
-			tournamentID:   10469769,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants:   make(map[string]int),
+	mockMultipleTournaments := tournaments{
+		tournamentList: map[int]tournament{
+			10469768: {
+				tournamentID:       10469768,
+				tournamentGame:     "Melty Blood: Type Lumina",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
+			10469769: {
+				tournamentID:       10469769,
+				tournamentGame:     "Melty Blood: Type Lumina",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
 		},
 	}
 
-	expectedResultMultipleTournaments := map[int]tournament{
-		10469768: {
-			tournamentID:   10469768,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants: map[string]int{
-				"Marc":       158464100,
-				"KosherSalt": 158464107,
-				"Bernstein":  158464116,
-				"test":       158464118,
-				"test2":      158464119,
-				"test3":      158464121,
-				"test4":      158464124,
+	expectedResultMultipleTournaments := tournaments{
+		tournamentList: map[int]tournament{
+			10469768: {
+				tournamentID:   10469768,
+				tournamentGame: "Melty Blood: Type Lumina",
+				participantsByName: map[string]int{
+					"Marc":       158464100,
+					"KosherSalt": 158464107,
+					"Bernstein":  158464116,
+					"test":       158464118,
+					"test2":      158464119,
+					"test3":      158464121,
+					"test4":      158464124,
+				},
+				participantsByID: map[int]string{
+					158464100: "Marc",
+					158464107: "KosherSalt",
+					158464116: "Bernstein",
+					158464118: "test",
+					158464119: "test2",
+					158464121: "test3",
+					158464124: "test4",
+				},
 			},
-		},
-		10469769: {
-			tournamentID:   10469769,
-			tournamentGame: "Melty Blood: Type Lumina",
-			participants:   make(map[string]int),
+			10469769: {
+				tournamentID:       10469769,
+				tournamentGame:     "Melty Blood: Type Lumina",
+				participantsByName: make(map[string]int),
+				participantsByID:   make(map[int]string),
+			},
 		},
 	}
 
 	t.Run("Get participants from multiple tournaments", func(t *testing.T) {
-		participantsResults, err := getParticipants(mockMultipleTournaments, mockClient)
+		err := mockMultipleTournaments.getParticipants(mockClient)
 		if err != nil {
 			t.Errorf("getParticipants failed\n%v\n", err)
 		}
-		if !reflect.DeepEqual(expectedResultMultipleTournaments, participantsResults) {
-			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResultMultipleTournaments, participantsResults)
+		if !reflect.DeepEqual(expectedResultMultipleTournaments, mockMultipleTournaments) {
+			t.Fatalf("Participants list did not come back the same. Expected=%v, got=%v\n", expectedResultMultipleTournaments, mockMultipleTournaments)
 		}
 	})
 
@@ -196,7 +231,7 @@ func TestGetParticipants(t *testing.T) {
 		return nil, errors.New("Testing error failure")
 	}
 	t.Run("Get paritipants error occurs", func(t *testing.T) {
-		_, err := getParticipants(mockTournaments, mockClient)
+		err := mockTournaments.getParticipants(mockClient)
 		if err != nil {
 			if err.Error() != "request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure" {
 				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure', got=%v\n", err)
@@ -209,5 +244,63 @@ func TestGetParticipants(t *testing.T) {
 }
 
 func TestGetMatches(t *testing.T) {
+	testData, err := os.ReadFile("./test-data/testMatchData.json")
+	if err != nil {
+		t.Errorf("Failed to read the test file\n%v\n", err)
+	}
+	mockClient.DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       io.NopCloser(bytes.NewReader(testData)),
+		}, nil
+	}
 
+	mockTournaments := tournaments{
+		map[int]tournament{
+			10469768: {
+				tournamentID:   10469768,
+				tournamentGame: "Melty Blood: Type Lumina",
+				participantsByName: map[string]int{
+					"KosherSalt": 158464107,
+					"test":       158464118,
+					"test2":      158464119,
+					"test4":      158464124,
+				},
+				participantsByID: map[int]string{
+					158464107: "KosherSalt",
+					158464118: "test",
+					158464119: "test2",
+					158464124: "test4",
+				},
+			},
+		},
+	}
+
+	expectedResult := []match{
+		{
+			player1ID:          158464118,
+			player1Name:        "test",
+			player2ID:          158464119,
+			player2Name:        "test2",
+			tournamentID:       10469768,
+			tournamentGamename: "Melty Blood: Type Lumina",
+		},
+		{
+			player1ID:          158464107,
+			player1Name:        "KosherSalt",
+			player2ID:          158464124,
+			player2Name:        "test4",
+			tournamentID:       10469768,
+			tournamentGamename: "Melty Blood: Type Lumina",
+		},
+	}
+	t.Run("Get Matches Single Tournaments", func(t *testing.T) {
+		result, err := mockTournaments.getMatches(mockClient)
+		if err != nil {
+			t.Errorf("getMatches failed\n%v\n", err)
+		}
+		if !reflect.DeepEqual(result, expectedResult) {
+			t.Fatalf("Matches did not come back as expected. Expected: %v, got=%v\n", expectedResult, result)
+		}
+	})
 }
