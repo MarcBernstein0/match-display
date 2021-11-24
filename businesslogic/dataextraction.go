@@ -54,7 +54,6 @@ func getTournaments(client HTTPClient) (*tournaments, error) {
 
 	for _, elem := range res.data {
 		if tournamentID, ok := elem["tournament"]["id"].(float64); ok {
-
 			if gameName, ok := elem["tournament"]["game_name"].(string); ok {
 				tournaments.tournamentList[int(tournamentID)] = tournament{
 					tournamentID:     int(tournamentID),
@@ -62,6 +61,12 @@ func getTournaments(client HTTPClient) (*tournaments, error) {
 					participantsByID: make(map[int]string),
 				}
 
+			} else if elem["tournament"]["game_name"] == nil {
+				tournaments.tournamentList[int(tournamentID)] = tournament{
+					tournamentID:     int(tournamentID),
+					tournamentGame:   "",
+					participantsByID: make(map[int]string),
+				}
 			} else {
 				return nil, errorhandling.FormatError(fmt.Sprintf("type for game_name did not match what was expected. Expected='string' got=%T", gameName))
 			}
@@ -78,10 +83,10 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 
 	cResponse := make(chan result)
 	var wg sync.WaitGroup
-	for k, v := range t.tournamentList {
+	for k := range t.tournamentList {
 		wg.Add(1) // tells the waitgroup that there is no 1 pending operation
 		apiPath := fmt.Sprintf("tournaments/%d/participants", k)
-		fmt.Println(v.tournamentGame)
+		// fmt.Println(v.tournamentGame)
 		go challongeApiMultiCall(client, apiPath, nil, cResponse, &wg)
 	}
 
@@ -132,10 +137,10 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	// https://api.challonge.com/v1/tournaments/{tournament}/matches.{json|xml}
 	cResponse := make(chan result)
 	var wg sync.WaitGroup
-	for k, v := range t.tournamentList {
+	for k := range t.tournamentList {
 		wg.Add(1)
 		apiPath := fmt.Sprintf("tournaments/%d/matches", k)
-		fmt.Println(v.tournamentGame)
+		// fmt.Println(v.tournamentGame)
 		go challongeApiMultiCall(client, apiPath, params, cResponse, &wg)
 	}
 
@@ -182,16 +187,17 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 }
 
 func GetTournamentData() (*tournaments, error) {
+	fmt.Println("Getting tournament info")
 	tournaments, err := getTournaments(client)
 	if ok, err := errorhandling.HandleError("failed when calling getTournaments", err); ok {
 		return nil, err
 	}
-	fmt.Println(tournaments)
+	// fmt.Println(tournaments)
 	err = tournaments.getParticipants(client)
 	if ok, err := errorhandling.HandleError("failed when calling getParticipants", err); ok {
 		return nil, err
 	}
-	fmt.Println(tournaments)
+	// fmt.Println(tournaments)
 
 	return tournaments, nil
 }
