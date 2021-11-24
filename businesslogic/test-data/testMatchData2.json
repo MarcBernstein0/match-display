@@ -1,0 +1,40 @@
+[
+    {
+        "match": {
+            "id": 256247927,
+            "tournament_id": 3953832,
+            "state": "open",
+            "player1_id": 158461769,
+            "player2_id": 158461785,
+            "player1_prereq_match_id": null,
+            "player2_prereq_match_id": null,
+            "player1_is_prereq_match_loser": false,
+            "player2_is_prereq_match_loser": false,
+            "winner_id": null,
+            "loser_id": null,
+            "started_at": "2021-11-10T21:41:54.651-05:00",
+            "created_at": "2021-11-10T21:41:54.580-05:00",
+            "updated_at": "2021-11-10T21:41:54.651-05:00",
+            "identifier": "B",
+            "has_attachment": false,
+            "round": 1,
+            "player1_votes": null,
+            "player2_votes": null,
+            "group_id": null,
+            "attachment_count": null,
+            "scheduled_time": null,
+            "location": null,
+            "underway_at": null,
+            "optional": false,
+            "rushb_id": null,
+            "completed_at": null,
+            "suggested_play_order": null,
+            "forfeited": null,
+            "open_graph_image_file_name": null,
+            "open_graph_image_content_type": null,
+            "open_graph_image_file_size": null,
+            "prerequisite_match_ids_csv": "",
+            "scores_csv": ""
+        }
+    }
+]
