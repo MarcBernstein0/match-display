@@ -12,3 +12,8 @@ func HandleError(errorString string, err error) (bool, error) {
 	}
 	return false, nil
 }
+
+func FormatError(errorString string) error {
+	_, fn, line, _ := runtime.Caller(1)
+	return fmt.Errorf("%s\n[error] %s:%d", errorString, fn, line)
+}

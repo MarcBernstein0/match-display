@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
 )
 
 type Config struct {
@@ -57,10 +59,10 @@ return:
 func challongeApiCall(client HTTPClient, apiPath string, params map[string]string) result {
 	fullAPIPath := fmt.Sprintf("%s/%s.json", API_URL, apiPath)
 	req, err := http.NewRequest("GET", fullAPIPath, nil)
-	if err != nil {
+	if ok, err := errorhandling.HandleError("failed to create request.", err); ok {
 		return result{
 			data: nil,
-			err:  fmt.Errorf("failed to create request.\n%v", err),
+			err:  err,
 		}
 	}
 	// build query
@@ -71,24 +73,26 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	}
 	req.URL.RawQuery = q.Encode()
 	res, err := client.Do(req)
-	if err != nil {
+	if ok, err := errorhandling.HandleError("failed to received response from challonge api.", err); ok {
 		return result{
 			data: nil,
-			err:  fmt.Errorf("failed to received response from challonge api.\n%v", err)}
+			err:  err,
+		}
 	}
 	defer res.Body.Close()
 	resData, err := ioutil.ReadAll(res.Body)
-	if err != nil {
+	if ok, err := errorhandling.HandleError("error when reading response body.", err); ok {
 		return result{
 			data: nil,
-			err:  fmt.Errorf("error when reading response body.\n%v", err),
+			err:  err,
 		}
 	}
 	var tData []map[string]map[string]interface{}
-	if err = json.Unmarshal([]byte(resData), &tData); err != nil {
+	err = json.Unmarshal([]byte(resData), &tData)
+	if ok, err := errorhandling.HandleError("failed to unmarshal json data", err); ok {
 		return result{
 			data: nil,
-			err:  fmt.Errorf("failed to unmarshal json data\n%v", err),
+			err:  err,
 		}
 	}
 	return result{

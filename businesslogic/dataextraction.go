@@ -48,8 +48,8 @@ func getTournaments(client HTTPClient) (*tournaments, error) {
 
 	// create request to client
 	res := challongeApiCall(client, "tournaments", params)
-	if res.err != nil {
-		return nil, fmt.Errorf("request failed in getTournaments.\n%v", res.err)
+	if ok, err := errorhandling.HandleError("request failed in getTournaments.", res.err); ok {
+		return nil, err
 	}
 
 	for _, elem := range res.data {
@@ -63,10 +63,10 @@ func getTournaments(client HTTPClient) (*tournaments, error) {
 				}
 
 			} else {
-				return nil, fmt.Errorf("type for game_name did not match what was expected. Expected='string' got=%T", gameName)
+				return nil, errorhandling.FormatError(fmt.Sprintf("type for game_name did not match what was expected. Expected='string' got=%T", gameName))
 			}
 		} else {
-			return nil, fmt.Errorf("type for tournament ID did not match what was expected. Expected='float64' got=%T", tournamentID)
+			return nil, errorhandling.FormatError(fmt.Sprintf("type for tournament ID did not match what was expected. Expected='float64' got=%T", tournamentID))
 		}
 	}
 
@@ -91,8 +91,8 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 	}()
 
 	for resultsApi := range cResponse {
-		if resultsApi.err != nil {
-			return fmt.Errorf("request failed in getParticipants call.\n%v", resultsApi.err)
+		if ok, err := errorhandling.HandleError("request failed in getParticipants call.", resultsApi.err); ok {
+			return err
 		}
 		allApiResult = append(allApiResult, resultsApi)
 	}
@@ -104,13 +104,13 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 					if participantID, ok := elem["participant"]["id"].(float64); ok {
 						t.tournamentList[int(tournamentID)].participantsByID[int(participantID)] = name
 					} else {
-						return fmt.Errorf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID)
+						return errorhandling.FormatError(fmt.Sprintf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID))
 					}
 				} else {
-					return fmt.Errorf("type for 'name' did not match what was expected. Expected='string' got=%T", name)
+					return errorhandling.FormatError(fmt.Sprintf("type for 'name' did not match what was expected. Expected='string' got=%T", name))
 				}
 			} else {
-				return fmt.Errorf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID)
+				return errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID))
 			}
 
 		}
@@ -145,8 +145,8 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	}()
 
 	for apiResults := range cResponse {
-		if apiResults.err != nil {
-			return nil, fmt.Errorf("request failed in getMatches\n%v", apiResults.err)
+		if ok, err := errorhandling.HandleError("request failed in getMatches", apiResults.err); ok {
+			return nil, err
 		}
 		allAPIResults = append(allAPIResults, apiResults)
 	}
@@ -159,19 +159,19 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 					match.player1ID = int(player1ID)
 					match.player1Name = t.tournamentList[int(tournamentID)].participantsByID[int(player1ID)]
 				} else {
-					return nil, fmt.Errorf("type for 'player1_id' did not match what was expected. Expected='float64' got=%T", player1ID)
+					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player1_id' did not match what was expected. Expected='float64' got=%T", player1ID))
 				}
 				if player2ID, ok := elem["match"]["player2_id"].(float64); ok {
 					match.player2ID = int(player2ID)
 					match.player2Name = t.tournamentList[int(tournamentID)].participantsByID[int(player2ID)]
 				} else {
-					return nil, fmt.Errorf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", player2ID)
+					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", player2ID))
 				}
 				match.tournamentGamename = t.tournamentList[int(tournamentID)].tournamentGame
 				match.tournamentID = int(tournamentID)
 				matches = append(matches, match)
 			} else {
-				return nil, fmt.Errorf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID)
+				return nil, errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID))
 			}
 
 		}
