@@ -35,7 +35,7 @@ type match struct {
 	map[int]string	mapping of tournament IDs and name of the game
 	error
 */
-func getTournaments(client HTTPClient) (*tournaments, error) {
+func getTournaments(date string, client HTTPClient) (*tournaments, error) {
 	// map of tournamentIDs and game names
 	tournaments := tournaments{
 		tournamentList: make(map[int]tournament),
@@ -43,7 +43,8 @@ func getTournaments(client HTTPClient) (*tournaments, error) {
 
 	// parameters to pass in
 	params := map[string]string{
-		"state": "in_progress",
+		"state":         "in_progress",
+		"created_after": date,
 	}
 
 	// create request to client
@@ -186,9 +187,9 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	return matches, nil
 }
 
-func GetTournamentData() (*tournaments, error) {
+func GetTournamentData(date string) (*tournaments, error) {
 	fmt.Println("Getting tournament info")
-	tournaments, err := getTournaments(client)
+	tournaments, err := getTournaments(date, client)
 	if ok, err := errorhandling.HandleError("failed when calling getTournaments", err); ok {
 		return nil, err
 	}

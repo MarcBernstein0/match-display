@@ -48,7 +48,7 @@ func TestGetTournaments(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewReader(testData)),
 		}, nil
 	}
-	tournamentsResult, err := getTournaments(mockClient)
+	tournamentsResult, err := getTournaments("2021-11-24", mockClient)
 	if err != nil {
 		t.Errorf("getTournaments failed\n%v\n", err)
 	}
@@ -211,7 +211,7 @@ func TestGetParticipants(t *testing.T) {
 	t.Run("Get paritipants error occurs", func(t *testing.T) {
 		err := mockTournaments.getParticipants(mockClient)
 		if err != nil {
-			if err.Error() != "request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure" {
+			if err.Error() != "request failed in getParticipants call.\n[error] /home/marc/Projects/match-display/businesslogic/dataextraction.go:100\nfailed to received response from challonge api.\n[error] /home/marc/Projects/match-display/businesslogic/challonge-results.go:76\nTesting error failure" {
 				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure', got=%v\n", err)
 			}
 		} else {

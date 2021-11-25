@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/MarcBernstein0/match-display/businesslogic"
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
@@ -9,7 +10,8 @@ import (
 
 func main() {
 	fmt.Println("Running program")
-	tournaments, err := businesslogic.GetTournamentData()
+	currentTime := time.Now()
+	tournaments, err := businesslogic.GetTournamentData(currentTime.Format("2006-01-02"))
 	if ok, err := errorhandling.HandleError("failed when calling GetTournamentData", err); ok {
 		panic(err)
 	}
