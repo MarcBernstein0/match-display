@@ -28,7 +28,7 @@ func TestGetTournaments(t *testing.T) {
 		t.Errorf("Failed to read the test file\n%v\n", err)
 	}
 
-	expectedResult := &tournaments{
+	expectedResult := &Tournaments{
 		TournamentList: map[int]tournament{
 			3953832: {
 				TournamentID:     3953832,
@@ -108,7 +108,7 @@ func TestMultipleApiCalls(t *testing.T) {
 }
 
 func TestGetParticipants(t *testing.T) {
-	mockTournaments := tournaments{
+	mockTournaments := Tournaments{
 		TournamentList: map[int]tournament{
 			10469768: {
 				TournamentID:     10469768,
@@ -118,7 +118,7 @@ func TestGetParticipants(t *testing.T) {
 		},
 	}
 
-	expectedResult := tournaments{
+	expectedResult := Tournaments{
 		map[int]tournament{
 			10469768: {
 				TournamentID:   10469768,
@@ -157,7 +157,7 @@ func TestGetParticipants(t *testing.T) {
 		}
 	})
 
-	mockMultipleTournaments := tournaments{
+	mockMultipleTournaments := Tournaments{
 		TournamentList: map[int]tournament{
 			10469768: {
 				TournamentID:     10469768,
@@ -172,7 +172,7 @@ func TestGetParticipants(t *testing.T) {
 		},
 	}
 
-	expectedResultMultipleTournaments := tournaments{
+	expectedResultMultipleTournaments := Tournaments{
 		TournamentList: map[int]tournament{
 			10469768: {
 				TournamentID:   10469768,
@@ -233,7 +233,7 @@ func TestGetMatches(t *testing.T) {
 		}, nil
 	}
 
-	mockTournaments := tournaments{
+	mockTournaments := Tournaments{
 		map[int]tournament{
 			10469768: {
 				TournamentID:   10469768,
@@ -248,22 +248,22 @@ func TestGetMatches(t *testing.T) {
 		},
 	}
 
-	expectedResult := []match{
+	expectedResult := []Match{
 		{
-			player1ID:          158464118,
-			player1Name:        "test",
-			player2ID:          158464119,
-			player2Name:        "test2",
+			Player1ID:          158464118,
+			Player1Name:        "test",
+			Player2ID:          158464119,
+			Player2Name:        "test2",
 			TournamentID:       10469768,
-			TournamentGamename: "Melty Blood: Type Lumina",
+			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			player1ID:          158464107,
-			player1Name:        "KosherSalt",
-			player2ID:          158464124,
-			player2Name:        "test4",
+			Player1ID:          158464107,
+			Player1Name:        "KosherSalt",
+			Player2ID:          158464124,
+			Player2Name:        "test4",
 			TournamentID:       10469768,
-			TournamentGamename: "Melty Blood: Type Lumina",
+			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 	}
 	t.Run("Get Matches Single Tournaments", func(t *testing.T) {
@@ -276,7 +276,7 @@ func TestGetMatches(t *testing.T) {
 		}
 	})
 
-	mockTournaments = tournaments{
+	mockTournaments = Tournaments{
 		map[int]tournament{
 			10469768: {
 				TournamentID:   10469768,
@@ -299,30 +299,30 @@ func TestGetMatches(t *testing.T) {
 		},
 	}
 
-	expectedResult = []match{
+	expectedResult = []Match{
 		{
-			player1ID:          158464118,
-			player1Name:        "test",
-			player2ID:          158464119,
-			player2Name:        "test2",
+			Player1ID:          158464118,
+			Player1Name:        "test",
+			Player2ID:          158464119,
+			Player2Name:        "test2",
 			TournamentID:       10469768,
-			TournamentGamename: "Melty Blood: Type Lumina",
+			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			player1ID:          158464107,
-			player1Name:        "KosherSalt",
-			player2ID:          158464124,
-			player2Name:        "test4",
+			Player1ID:          158464107,
+			Player1Name:        "KosherSalt",
+			Player2ID:          158464124,
+			Player2Name:        "test4",
 			TournamentID:       10469768,
-			TournamentGamename: "Melty Blood: Type Lumina",
+			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			player1ID:          158461769,
-			player1Name:        "test",
-			player2ID:          158461785,
-			player2Name:        "test2",
+			Player1ID:          158461769,
+			Player1Name:        "test",
+			Player2ID:          158461785,
+			Player2Name:        "test2",
 			TournamentID:       3953832,
-			TournamentGamename: "Guilty Gear -Strive-",
+			TournamentGameName: "Guilty Gear -Strive-",
 		},
 	}
 
@@ -358,7 +358,7 @@ func TestGetMatches(t *testing.T) {
 	})
 }
 
-func contains(matches []match, match match) bool {
+func contains(matches []Match, match Match) bool {
 	for _, matchElem := range matches {
 		if !reflect.DeepEqual(matchElem, match) {
 			return true

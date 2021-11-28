@@ -7,23 +7,23 @@ import (
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
 )
 
-type tournaments struct {
-	TournamentList map[int]tournament
+type Tournaments struct {
+	TournamentList map[int]tournament `json:"tournament_list"`
 }
 
 type tournament struct {
-	TournamentID     int
-	TournamentGame   string
-	ParticipantsByID map[int]string
+	TournamentID     int            `json:"tournament_id"`
+	TournamentGame   string         `json:"tournamnet_game"`
+	ParticipantsByID map[int]string `json:"participants_by_id"`
 }
 
-type match struct {
-	player1ID          int
-	player1Name        string
-	player2ID          int
-	player2Name        string
-	TournamentID       int
-	TournamentGamename string
+type Match struct {
+	Player1ID          int    `json:"player1_id"`
+	Player1Name        string `json:"player1_name"`
+	Player2ID          int    `json:"player2_id"`
+	Player2Name        string `json:"player2_name"`
+	TournamentID       int    `json:"tournament_id"`
+	TournamentGameName string `json:"tournament_game_name"`
 }
 
 /* calls challenonge api to get all running tournaments
@@ -35,9 +35,9 @@ type match struct {
 	map[int]string	mapping of tournament IDs and name of the game
 	error
 */
-func getTournaments(date string, client HTTPClient) (*tournaments, error) {
+func getTournaments(date string, client HTTPClient) (*Tournaments, error) {
 	// map of TournamentIDs and game names
-	tournaments := tournaments{
+	tournaments := Tournaments{
 		TournamentList: make(map[int]tournament),
 	}
 
@@ -79,7 +79,7 @@ func getTournaments(date string, client HTTPClient) (*tournaments, error) {
 	return &tournaments, nil
 }
 
-func (t *tournaments) getParticipants(client HTTPClient) error {
+func (t *Tournaments) getParticipants(client HTTPClient) error {
 	allApiResult := make([]result, 0)
 
 	cResponse := make(chan result)
@@ -124,12 +124,12 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 	return nil
 }
 
-func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
+func (t *Tournaments) getMatches(client HTTPClient) ([]Match, error) {
 	// all api results from multiple calls
 	allAPIResults := make([]result, 0)
 
 	// slice of matches
-	matches := make([]match, 0)
+	matches := make([]Match, 0)
 
 	// parameters to pass in
 	params := map[string]string{
@@ -159,21 +159,21 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 
 	for _, res := range allAPIResults {
 		for _, elem := range res.data {
-			var match match
+			var match Match
 			if TournamentID, ok := elem["match"]["tournament_id"].(float64); ok {
 				if player1ID, ok := elem["match"]["player1_id"].(float64); ok {
-					match.player1ID = int(player1ID)
-					match.player1Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player1ID)]
+					match.Player1ID = int(player1ID)
+					match.Player1Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player1ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player1_id' did not match what was expected. Expected='float64' got=%T", player1ID))
 				}
 				if player2ID, ok := elem["match"]["player2_id"].(float64); ok {
-					match.player2ID = int(player2ID)
-					match.player2Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player2ID)]
+					match.Player2ID = int(player2ID)
+					match.Player2Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player2ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", player2ID))
 				}
-				match.TournamentGamename = t.TournamentList[int(TournamentID)].TournamentGame
+				match.TournamentGameName = t.TournamentList[int(TournamentID)].TournamentGame
 				match.TournamentID = int(TournamentID)
 				matches = append(matches, match)
 			} else {
@@ -187,7 +187,7 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	return matches, nil
 }
 
-func GetTournamentData(date string) (*tournaments, error) {
+func GetTournamentData(date string) (*Tournaments, error) {
 	fmt.Println("Getting tournament info")
 	tournaments, err := getTournaments(date, client)
 	if ok, err := errorhandling.HandleError("failed when calling getTournaments", err); ok {
@@ -203,7 +203,7 @@ func GetTournamentData(date string) (*tournaments, error) {
 	return tournaments, nil
 }
 
-func (t *tournaments) GetMatches() ([]match, error) {
+func (t *Tournaments) GetMatches() ([]Match, error) {
 	matches, err := t.getMatches(client)
 	if ok, err := errorhandling.HandleError("failed when calling getMatches", err); ok {
 		return nil, err

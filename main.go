@@ -28,6 +28,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc(fmt.Sprintf("%s/health-check", BASE_ROUTE), controller.HealthCheck).Methods(http.MethodGet)
 	r.HandleFunc(fmt.Sprintf("%s/tournaments", BASE_ROUTE), controller.GetTournamentData).Methods(http.MethodGet)
+	r.HandleFunc(fmt.Sprintf("%s/matches", BASE_ROUTE), controller.GetMatchData).Methods(http.MethodPost)
 
 	// Get matches
 
