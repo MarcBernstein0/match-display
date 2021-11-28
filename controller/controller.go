@@ -72,5 +72,20 @@ func GetMatchData(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	fmt.Println(tournaments)
-
+	matches, err := tournaments.GetMatches()
+	if ok, err := errorhandling.HandleError("failed to get tournament data in controler method GetMatchData", err); ok {
+		log.Println(err)
+		errorhandling.ErrorResponse(w, "Error with getting data", http.StatusInternalServerError)
+		return
+	}
+	data, err := json.Marshal(matches)
+	if ok, err := errorhandling.HandleError("failed to convert tournament data to json", err); ok {
+		log.Printf("Error with getting data\n%v", err)
+		// w.WriteHeader(http.StatusInternalServerError)
+		errorhandling.ErrorResponse(w, "Error with Marshalling data", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
