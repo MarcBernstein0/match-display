@@ -27,7 +27,7 @@ func main() {
 	// Get all tournaments for a specific date
 	r := mux.NewRouter()
 	r.HandleFunc(fmt.Sprintf("%s/health-check", BASE_ROUTE), controller.HealthCheck).Methods(http.MethodGet)
-	r.HandleFunc(fmt.Sprintf("%s/tournaments", BASE_ROUTE), controller.GetTournamentData)
+	r.HandleFunc(fmt.Sprintf("%s/tournaments", BASE_ROUTE), controller.GetTournamentData).Methods(http.MethodGet)
 
 	// Get matches
 
