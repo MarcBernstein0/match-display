@@ -8,13 +8,13 @@ import (
 )
 
 type tournaments struct {
-	tournamentList map[int]tournament
+	TournamentList map[int]tournament
 }
 
 type tournament struct {
-	tournamentID     int
-	tournamentGame   string
-	participantsByID map[int]string
+	TournamentID     int
+	TournamentGame   string
+	ParticipantsByID map[int]string
 }
 
 type match struct {
@@ -22,8 +22,8 @@ type match struct {
 	player1Name        string
 	player2ID          int
 	player2Name        string
-	tournamentID       int
-	tournamentGamename string
+	TournamentID       int
+	TournamentGamename string
 }
 
 /* calls challenonge api to get all running tournaments
@@ -36,9 +36,9 @@ type match struct {
 	error
 */
 func getTournaments(date string, client HTTPClient) (*tournaments, error) {
-	// map of tournamentIDs and game names
+	// map of TournamentIDs and game names
 	tournaments := tournaments{
-		tournamentList: make(map[int]tournament),
+		TournamentList: make(map[int]tournament),
 	}
 
 	// parameters to pass in
@@ -54,25 +54,25 @@ func getTournaments(date string, client HTTPClient) (*tournaments, error) {
 	}
 
 	for _, elem := range res.data {
-		if tournamentID, ok := elem["tournament"]["id"].(float64); ok {
+		if TournamentID, ok := elem["tournament"]["id"].(float64); ok {
 			if gameName, ok := elem["tournament"]["game_name"].(string); ok {
-				tournaments.tournamentList[int(tournamentID)] = tournament{
-					tournamentID:     int(tournamentID),
-					tournamentGame:   gameName,
-					participantsByID: make(map[int]string),
+				tournaments.TournamentList[int(TournamentID)] = tournament{
+					TournamentID:     int(TournamentID),
+					TournamentGame:   gameName,
+					ParticipantsByID: make(map[int]string),
 				}
 
 			} else if elem["tournament"]["game_name"] == nil {
-				tournaments.tournamentList[int(tournamentID)] = tournament{
-					tournamentID:     int(tournamentID),
-					tournamentGame:   "",
-					participantsByID: make(map[int]string),
+				tournaments.TournamentList[int(TournamentID)] = tournament{
+					TournamentID:     int(TournamentID),
+					TournamentGame:   "",
+					ParticipantsByID: make(map[int]string),
 				}
 			} else {
 				return nil, errorhandling.FormatError(fmt.Sprintf("type for game_name did not match what was expected. Expected='string' got=%T", gameName))
 			}
 		} else {
-			return nil, errorhandling.FormatError(fmt.Sprintf("type for tournament ID did not match what was expected. Expected='float64' got=%T", tournamentID))
+			return nil, errorhandling.FormatError(fmt.Sprintf("type for tournament ID did not match what was expected. Expected='float64' got=%T", TournamentID))
 		}
 	}
 
@@ -84,10 +84,10 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 
 	cResponse := make(chan result)
 	var wg sync.WaitGroup
-	for k := range t.tournamentList {
+	for k := range t.TournamentList {
 		wg.Add(1) // tells the waitgroup that there is no 1 pending operation
 		apiPath := fmt.Sprintf("tournaments/%d/participants", k)
-		// fmt.Println(v.tournamentGame)
+		// fmt.Println(v.TournamentGame)
 		go challongeApiMultiCall(client, apiPath, nil, cResponse, &wg)
 	}
 
@@ -105,10 +105,10 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 
 	for _, res := range allApiResult {
 		for _, elem := range res.data {
-			if tournamentID, ok := elem["participant"]["tournament_id"].(float64); ok {
+			if TournamentID, ok := elem["participant"]["tournament_id"].(float64); ok {
 				if name, ok := elem["participant"]["name"].(string); ok {
 					if participantID, ok := elem["participant"]["id"].(float64); ok {
-						t.tournamentList[int(tournamentID)].participantsByID[int(participantID)] = name
+						t.TournamentList[int(TournamentID)].ParticipantsByID[int(participantID)] = name
 					} else {
 						return errorhandling.FormatError(fmt.Sprintf("type for 'participantID' did not match what was expected. Expected='float64' got=%T", participantID))
 					}
@@ -116,7 +116,7 @@ func (t *tournaments) getParticipants(client HTTPClient) error {
 					return errorhandling.FormatError(fmt.Sprintf("type for 'name' did not match what was expected. Expected='string' got=%T", name))
 				}
 			} else {
-				return errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID))
+				return errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", TournamentID))
 			}
 
 		}
@@ -138,10 +138,10 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	// https://api.challonge.com/v1/tournaments/{tournament}/matches.{json|xml}
 	cResponse := make(chan result)
 	var wg sync.WaitGroup
-	for k := range t.tournamentList {
+	for k := range t.TournamentList {
 		wg.Add(1)
 		apiPath := fmt.Sprintf("tournaments/%d/matches", k)
-		// fmt.Println(v.tournamentGame)
+		// fmt.Println(v.TournamentGame)
 		go challongeApiMultiCall(client, apiPath, params, cResponse, &wg)
 	}
 
@@ -160,24 +160,24 @@ func (t *tournaments) getMatches(client HTTPClient) ([]match, error) {
 	for _, res := range allAPIResults {
 		for _, elem := range res.data {
 			var match match
-			if tournamentID, ok := elem["match"]["tournament_id"].(float64); ok {
+			if TournamentID, ok := elem["match"]["tournament_id"].(float64); ok {
 				if player1ID, ok := elem["match"]["player1_id"].(float64); ok {
 					match.player1ID = int(player1ID)
-					match.player1Name = t.tournamentList[int(tournamentID)].participantsByID[int(player1ID)]
+					match.player1Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player1ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player1_id' did not match what was expected. Expected='float64' got=%T", player1ID))
 				}
 				if player2ID, ok := elem["match"]["player2_id"].(float64); ok {
 					match.player2ID = int(player2ID)
-					match.player2Name = t.tournamentList[int(tournamentID)].participantsByID[int(player2ID)]
+					match.player2Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player2ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", player2ID))
 				}
-				match.tournamentGamename = t.tournamentList[int(tournamentID)].tournamentGame
-				match.tournamentID = int(tournamentID)
+				match.TournamentGamename = t.TournamentList[int(TournamentID)].TournamentGame
+				match.TournamentID = int(TournamentID)
 				matches = append(matches, match)
 			} else {
-				return nil, errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", tournamentID))
+				return nil, errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", TournamentID))
 			}
 
 		}

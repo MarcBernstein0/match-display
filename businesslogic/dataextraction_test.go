@@ -29,16 +29,16 @@ func TestGetTournaments(t *testing.T) {
 	}
 
 	expectedResult := &tournaments{
-		tournamentList: map[int]tournament{
+		TournamentList: map[int]tournament{
 			3953832: {
-				tournamentID:     3953832,
-				tournamentGame:   "Guilty Gear -Strive-",
-				participantsByID: make(map[int]string),
+				TournamentID:     3953832,
+				TournamentGame:   "Guilty Gear -Strive-",
+				ParticipantsByID: make(map[int]string),
 			},
 			10469768: {
-				tournamentID:     10469768,
-				tournamentGame:   "Melty Blood: Type Lumina",
-				participantsByID: make(map[int]string),
+				TournamentID:     10469768,
+				TournamentGame:   "Melty Blood: Type Lumina",
+				ParticipantsByID: make(map[int]string),
 			},
 		},
 	}
@@ -109,11 +109,11 @@ func TestMultipleApiCalls(t *testing.T) {
 
 func TestGetParticipants(t *testing.T) {
 	mockTournaments := tournaments{
-		tournamentList: map[int]tournament{
+		TournamentList: map[int]tournament{
 			10469768: {
-				tournamentID:     10469768,
-				tournamentGame:   "Melty Blood: Type Lumina",
-				participantsByID: make(map[int]string),
+				TournamentID:     10469768,
+				TournamentGame:   "Melty Blood: Type Lumina",
+				ParticipantsByID: make(map[int]string),
 			},
 		},
 	}
@@ -121,9 +121,9 @@ func TestGetParticipants(t *testing.T) {
 	expectedResult := tournaments{
 		map[int]tournament{
 			10469768: {
-				tournamentID:   10469768,
-				tournamentGame: "Melty Blood: Type Lumina",
-				participantsByID: map[int]string{
+				TournamentID:   10469768,
+				TournamentGame: "Melty Blood: Type Lumina",
+				ParticipantsByID: map[int]string{
 					158464100: "Marc",
 					158464107: "KosherSalt",
 					158464116: "Bernstein",
@@ -158,26 +158,26 @@ func TestGetParticipants(t *testing.T) {
 	})
 
 	mockMultipleTournaments := tournaments{
-		tournamentList: map[int]tournament{
+		TournamentList: map[int]tournament{
 			10469768: {
-				tournamentID:     10469768,
-				tournamentGame:   "Melty Blood: Type Lumina",
-				participantsByID: make(map[int]string),
+				TournamentID:     10469768,
+				TournamentGame:   "Melty Blood: Type Lumina",
+				ParticipantsByID: make(map[int]string),
 			},
 			10469769: {
-				tournamentID:     10469769,
-				tournamentGame:   "Melty Blood: Type Lumina",
-				participantsByID: make(map[int]string),
+				TournamentID:     10469769,
+				TournamentGame:   "Melty Blood: Type Lumina",
+				ParticipantsByID: make(map[int]string),
 			},
 		},
 	}
 
 	expectedResultMultipleTournaments := tournaments{
-		tournamentList: map[int]tournament{
+		TournamentList: map[int]tournament{
 			10469768: {
-				tournamentID:   10469768,
-				tournamentGame: "Melty Blood: Type Lumina",
-				participantsByID: map[int]string{
+				TournamentID:   10469768,
+				TournamentGame: "Melty Blood: Type Lumina",
+				ParticipantsByID: map[int]string{
 					158464100: "Marc",
 					158464107: "KosherSalt",
 					158464116: "Bernstein",
@@ -188,9 +188,9 @@ func TestGetParticipants(t *testing.T) {
 				},
 			},
 			10469769: {
-				tournamentID:     10469769,
-				tournamentGame:   "Melty Blood: Type Lumina",
-				participantsByID: make(map[int]string),
+				TournamentID:     10469769,
+				TournamentGame:   "Melty Blood: Type Lumina",
+				ParticipantsByID: make(map[int]string),
 			},
 		},
 	}
@@ -236,9 +236,9 @@ func TestGetMatches(t *testing.T) {
 	mockTournaments := tournaments{
 		map[int]tournament{
 			10469768: {
-				tournamentID:   10469768,
-				tournamentGame: "Melty Blood: Type Lumina",
-				participantsByID: map[int]string{
+				TournamentID:   10469768,
+				TournamentGame: "Melty Blood: Type Lumina",
+				ParticipantsByID: map[int]string{
 					158464107: "KosherSalt",
 					158464118: "test",
 					158464119: "test2",
@@ -254,16 +254,16 @@ func TestGetMatches(t *testing.T) {
 			player1Name:        "test",
 			player2ID:          158464119,
 			player2Name:        "test2",
-			tournamentID:       10469768,
-			tournamentGamename: "Melty Blood: Type Lumina",
+			TournamentID:       10469768,
+			TournamentGamename: "Melty Blood: Type Lumina",
 		},
 		{
 			player1ID:          158464107,
 			player1Name:        "KosherSalt",
 			player2ID:          158464124,
 			player2Name:        "test4",
-			tournamentID:       10469768,
-			tournamentGamename: "Melty Blood: Type Lumina",
+			TournamentID:       10469768,
+			TournamentGamename: "Melty Blood: Type Lumina",
 		},
 	}
 	t.Run("Get Matches Single Tournaments", func(t *testing.T) {
@@ -279,9 +279,9 @@ func TestGetMatches(t *testing.T) {
 	mockTournaments = tournaments{
 		map[int]tournament{
 			10469768: {
-				tournamentID:   10469768,
-				tournamentGame: "Melty Blood: Type Lumina",
-				participantsByID: map[int]string{
+				TournamentID:   10469768,
+				TournamentGame: "Melty Blood: Type Lumina",
+				ParticipantsByID: map[int]string{
 					158464107: "KosherSalt",
 					158464118: "test",
 					158464119: "test2",
@@ -289,9 +289,9 @@ func TestGetMatches(t *testing.T) {
 				},
 			},
 			3953832: {
-				tournamentID:   3953832,
-				tournamentGame: "Guilty Gear -Strive-",
-				participantsByID: map[int]string{
+				TournamentID:   3953832,
+				TournamentGame: "Guilty Gear -Strive-",
+				ParticipantsByID: map[int]string{
 					158461769: "test",
 					158461785: "test2",
 				},
@@ -305,24 +305,24 @@ func TestGetMatches(t *testing.T) {
 			player1Name:        "test",
 			player2ID:          158464119,
 			player2Name:        "test2",
-			tournamentID:       10469768,
-			tournamentGamename: "Melty Blood: Type Lumina",
+			TournamentID:       10469768,
+			TournamentGamename: "Melty Blood: Type Lumina",
 		},
 		{
 			player1ID:          158464107,
 			player1Name:        "KosherSalt",
 			player2ID:          158464124,
 			player2Name:        "test4",
-			tournamentID:       10469768,
-			tournamentGamename: "Melty Blood: Type Lumina",
+			TournamentID:       10469768,
+			TournamentGamename: "Melty Blood: Type Lumina",
 		},
 		{
 			player1ID:          158461769,
 			player1Name:        "test",
 			player2ID:          158461785,
 			player2Name:        "test2",
-			tournamentID:       3953832,
-			tournamentGamename: "Guilty Gear -Strive-",
+			TournamentID:       3953832,
+			TournamentGamename: "Guilty Gear -Strive-",
 		},
 	}
 
