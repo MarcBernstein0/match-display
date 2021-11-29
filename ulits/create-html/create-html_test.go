@@ -46,7 +46,7 @@ func TestCreateHtml(t *testing.T) {
 		},
 	}
 
-	result, err := CreateHtml(mockMatches)
+	result, err := CreateHtml(&mockMatches)
 	if err != nil {
 		t.Fatalf("Error occured when calling CreateHtml\n%v", err)
 	}

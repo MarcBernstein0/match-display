@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/MarcBernstein0/match-display/businesslogic"
+	createhtml "github.com/MarcBernstein0/match-display/ulits/create-html"
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
 )
 
@@ -71,21 +72,22 @@ func GetMatchData(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println(tournaments)
+	// fmt.Println(tournaments)
 	matches, err := tournaments.GetMatches()
 	if ok, err := errorhandling.HandleError("failed to get tournament data in controler method GetMatchData", err); ok {
 		log.Println(err)
 		errorhandling.ErrorResponse(w, "Error with getting data", http.StatusInternalServerError)
 		return
 	}
-	data, err := json.Marshal(matches)
-	if ok, err := errorhandling.HandleError("failed to convert tournament data to json", err); ok {
+
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	htmlString, err := createhtml.CreateHtml(matches)
+	if ok, err := errorhandling.HandleError("failed to convert tournament data to html", err); ok {
 		log.Printf("Error with getting data\n%v", err)
 		// w.WriteHeader(http.StatusInternalServerError)
-		errorhandling.ErrorResponse(w, "Error with Marshalling data", http.StatusInternalServerError)
+		errorhandling.ErrorResponse(w, "Error with creating html string", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
+	w.Write([]byte(htmlString))
 }
