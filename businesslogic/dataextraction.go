@@ -26,6 +26,10 @@ type Match struct {
 	TournamentGameName string `json:"tournament_game_name"`
 }
 
+type Matches struct {
+	MatchList []Match
+}
+
 /* calls challenonge api to get all running tournaments
    created recently
    args:
@@ -124,12 +128,12 @@ func (t *Tournaments) getParticipants(client HTTPClient) error {
 	return nil
 }
 
-func (t *Tournaments) getMatches(client HTTPClient) ([]Match, error) {
+func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 	// all api results from multiple calls
 	allAPIResults := make([]result, 0)
 
 	// slice of matches
-	matches := make([]Match, 0)
+	matchList := make([]Match, 0)
 
 	// parameters to pass in
 	params := map[string]string{
@@ -175,7 +179,7 @@ func (t *Tournaments) getMatches(client HTTPClient) ([]Match, error) {
 				}
 				match.TournamentGameName = t.TournamentList[int(TournamentID)].TournamentGame
 				match.TournamentID = int(TournamentID)
-				matches = append(matches, match)
+				matchList = append(matchList, match)
 			} else {
 				return nil, errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", TournamentID))
 			}
@@ -184,7 +188,9 @@ func (t *Tournaments) getMatches(client HTTPClient) ([]Match, error) {
 
 	}
 
-	return matches, nil
+	return &Matches{
+		MatchList: matchList,
+	}, nil
 }
 
 func GetTournamentData(date string) (*Tournaments, error) {
@@ -203,7 +209,7 @@ func GetTournamentData(date string) (*Tournaments, error) {
 	return tournaments, nil
 }
 
-func (t *Tournaments) GetMatches() ([]Match, error) {
+func (t *Tournaments) GetMatches() (*Matches, error) {
 	matches, err := t.getMatches(client)
 	if ok, err := errorhandling.HandleError("failed when calling getMatches", err); ok {
 		return nil, err

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <h2>Upcoming Matches</h2>
+        <table>
+            <tr>
+                <th>Player1</th>
+                <th>Player2</th>
+                <th>Game</th>
+            </tr>
+            {{range .MatchList}}
+            <tr>
+                <td>{{.Player1Name}}</td>
+                <td>{{.Player2Name}}</td>
+                <td>{{.TournamentGameName}}</td>
+            </tr>
+            {{end}}
+        </table>
+    </body>
+
+</html>
