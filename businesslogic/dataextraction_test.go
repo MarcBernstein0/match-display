@@ -211,7 +211,7 @@ func TestGetParticipants(t *testing.T) {
 	t.Run("Get paritipants error occurs", func(t *testing.T) {
 		err := mockTournaments.getParticipants(mockClient)
 		if err != nil {
-			if err.Error() != "request failed in getParticipants call.\n[error] /home/marc/Projects/match-display/businesslogic/dataextraction.go:104\nfailed to received response from challonge api.\n[error] /home/marc/Projects/match-display/businesslogic/challonge-results.go:76\nTesting error failure" {
+			if !strings.Contains(err.Error(), "request failed in getParticipants call.") {
 				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\n[error] /home/marc/Projects/match-display/businesslogic/dataextraction.go:104\nfailed to received response from challonge api.\n[error] /home/marc/Projects/match-display/businesslogic/challonge-results.go:76\nTesting error failure', got=%v\n", err)
 			}
 		} else {
