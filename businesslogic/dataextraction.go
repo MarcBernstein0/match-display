@@ -2,6 +2,7 @@ package businesslogic
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
@@ -18,11 +19,9 @@ type tournament struct {
 }
 
 type Match struct {
-	Player1ID          int    `json:"player1_id"`
 	Player1Name        string `json:"player1_name"`
-	Player2ID          int    `json:"player2_id"`
 	Player2Name        string `json:"player2_name"`
-	TournamentID       int    `json:"tournament_id"`
+	Round              int    `json:"round"`
 	TournamentGameName string `json:"tournament_game_name"`
 }
 
@@ -166,19 +165,23 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 			var match Match
 			if TournamentID, ok := elem["match"]["tournament_id"].(float64); ok {
 				if player1ID, ok := elem["match"]["player1_id"].(float64); ok {
-					match.Player1ID = int(player1ID)
 					match.Player1Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player1ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player1_id' did not match what was expected. Expected='float64' got=%T", player1ID))
 				}
 				if player2ID, ok := elem["match"]["player2_id"].(float64); ok {
-					match.Player2ID = int(player2ID)
 					match.Player2Name = t.TournamentList[int(TournamentID)].ParticipantsByID[int(player2ID)]
 				} else {
 					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", player2ID))
 				}
+				if round, ok := elem["match"]["round"].(float64); ok {
+					match.Round = int(round)
+				} else {
+					return nil, errorhandling.FormatError(fmt.Sprintf("type for 'player2_id' did not match what was expected. Expected='float64' got=%T", round))
+				}
+				// fmt.Printf("Round=%v type=%T\n", elem["match"]["round"], elem["match"]["round"])
+
 				match.TournamentGameName = t.TournamentList[int(TournamentID)].TournamentGame
-				match.TournamentID = int(TournamentID)
 				matchList = append(matchList, match)
 			} else {
 				return nil, errorhandling.FormatError(fmt.Sprintf("type for 'tournament_id' did not match what was expected. Expected='float64' got=%T", TournamentID))
@@ -187,6 +190,12 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 		}
 
 	}
+
+	// order slices
+	sort.Slice(matchList, func(i, j int) bool {
+		return matchList[i].Player1Name <= matchList[j].Player1Name
+		// return false
+	})
 
 	return &Matches{
 		MatchList: matchList,

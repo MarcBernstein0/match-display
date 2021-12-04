@@ -250,19 +250,15 @@ func TestGetMatches(t *testing.T) {
 
 	expectedResult := []Match{
 		{
-			Player1ID:          158464118,
-			Player1Name:        "test",
-			Player2ID:          158464119,
-			Player2Name:        "test2",
-			TournamentID:       10469768,
+			Player1Name:        "KosherSalt",
+			Player2Name:        "test4",
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			Player1ID:          158464107,
-			Player1Name:        "KosherSalt",
-			Player2ID:          158464124,
-			Player2Name:        "test4",
-			TournamentID:       10469768,
+			Player1Name:        "test",
+			Player2Name:        "test2",
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 	}
@@ -301,27 +297,21 @@ func TestGetMatches(t *testing.T) {
 
 	expectedResult = []Match{
 		{
-			Player1ID:          158464118,
-			Player1Name:        "test",
-			Player2ID:          158464119,
-			Player2Name:        "test2",
-			TournamentID:       10469768,
-			TournamentGameName: "Melty Blood: Type Lumina",
-		},
-		{
-			Player1ID:          158464107,
 			Player1Name:        "KosherSalt",
-			Player2ID:          158464124,
 			Player2Name:        "test4",
-			TournamentID:       10469768,
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			Player1ID:          158461769,
 			Player1Name:        "test",
-			Player2ID:          158461785,
 			Player2Name:        "test2",
-			TournamentID:       3953832,
+			Round:              1,
+			TournamentGameName: "Melty Blood: Type Lumina",
+		},
+		{
+			Player1Name:        "test",
+			Player2Name:        "test2",
+			Round:              1,
 			TournamentGameName: "Guilty Gear -Strive-",
 		},
 	}
