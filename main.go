@@ -39,7 +39,7 @@ func main() {
 	// Get matches
 	fmt.Println("Listening on :8080")
 
-	if err := http.ListenAndServe(port, r); err != nil {
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
 
