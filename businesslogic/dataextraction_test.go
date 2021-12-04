@@ -211,8 +211,8 @@ func TestGetParticipants(t *testing.T) {
 	t.Run("Get paritipants error occurs", func(t *testing.T) {
 		err := mockTournaments.getParticipants(mockClient)
 		if err != nil {
-			if err.Error() != "request failed in getParticipants call.\n[error] /home/marc/Projects/match-display/businesslogic/dataextraction.go:100\nfailed to received response from challonge api.\n[error] /home/marc/Projects/match-display/businesslogic/challonge-results.go:76\nTesting error failure" {
-				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\nfailed to received response from challonge api.\nTesting error failure', got=%v\n", err)
+			if !strings.Contains(err.Error(), "request failed in getParticipants call.") {
+				t.Fatalf("Error did not come back as expected. Expected='request failed in getParticipants call.\n[error] /home/marc/Projects/match-display/businesslogic/dataextraction.go:104\nfailed to received response from challonge api.\n[error] /home/marc/Projects/match-display/businesslogic/challonge-results.go:76\nTesting error failure', got=%v\n", err)
 			}
 		} else {
 			t.Fatalf("Error came back empty\n")
@@ -250,19 +250,15 @@ func TestGetMatches(t *testing.T) {
 
 	expectedResult := []Match{
 		{
-			Player1ID:          158464118,
-			Player1Name:        "test",
-			Player2ID:          158464119,
-			Player2Name:        "test2",
-			TournamentID:       10469768,
+			Player1Name:        "KosherSalt",
+			Player2Name:        "test4",
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			Player1ID:          158464107,
-			Player1Name:        "KosherSalt",
-			Player2ID:          158464124,
-			Player2Name:        "test4",
-			TournamentID:       10469768,
+			Player1Name:        "test",
+			Player2Name:        "test2",
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 	}
@@ -271,7 +267,7 @@ func TestGetMatches(t *testing.T) {
 		if err != nil {
 			t.Errorf("getMatches failed\n%v\n", err)
 		}
-		if !reflect.DeepEqual(result, expectedResult) {
+		if !reflect.DeepEqual(result.MatchList, expectedResult) {
 			t.Fatalf("Matches did not come back as expected. Expected: %v, got=%v\n", expectedResult, result)
 		}
 	})
@@ -301,27 +297,21 @@ func TestGetMatches(t *testing.T) {
 
 	expectedResult = []Match{
 		{
-			Player1ID:          158464118,
-			Player1Name:        "test",
-			Player2ID:          158464119,
-			Player2Name:        "test2",
-			TournamentID:       10469768,
-			TournamentGameName: "Melty Blood: Type Lumina",
-		},
-		{
-			Player1ID:          158464107,
 			Player1Name:        "KosherSalt",
-			Player2ID:          158464124,
 			Player2Name:        "test4",
-			TournamentID:       10469768,
+			Round:              1,
 			TournamentGameName: "Melty Blood: Type Lumina",
 		},
 		{
-			Player1ID:          158461769,
 			Player1Name:        "test",
-			Player2ID:          158461785,
 			Player2Name:        "test2",
-			TournamentID:       3953832,
+			Round:              1,
+			TournamentGameName: "Melty Blood: Type Lumina",
+		},
+		{
+			Player1Name:        "test",
+			Player2Name:        "test2",
+			Round:              1,
 			TournamentGameName: "Guilty Gear -Strive-",
 		},
 	}
@@ -350,7 +340,7 @@ func TestGetMatches(t *testing.T) {
 		if err != nil {
 			t.Errorf("getMatches failed\n%v\n", err)
 		}
-		for _, resultElem := range result {
+		for _, resultElem := range result.MatchList {
 			if !contains(expectedResult, resultElem) {
 				t.Fatalf("Match is not in expected matches. ExpectedMatches=%v, resultMatch=%v\n", expectedResult, resultElem)
 			}

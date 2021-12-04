@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
+	"runtime"
 	"sync"
 
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
@@ -30,7 +32,8 @@ const API_URL = "https://api.challonge.com/v1"
 
 func init() {
 	// Open config file
-	rawConfig, err := ioutil.ReadFile("/home/marc/Projects/match-display/config.json") // will change path, problem with running test and running from main
+	_, f, _, _ := runtime.Caller(0)
+	rawConfig, err := ioutil.ReadFile(filepath.Dir(f) + "/../config.json") // will change path, problem with running test and running from main
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -73,6 +76,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	}
 	req.URL.RawQuery = q.Encode()
 	res, err := client.Do(req)
+	// TODO: check if result back http code
 	if ok, err := errorhandling.HandleError("failed to received response from challonge api.", err); ok {
 		return result{
 			data: nil,
