@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/MarcBernstein0/match-display/controller"
 	"github.com/gorilla/mux"
@@ -23,6 +24,11 @@ func main() {
 	// 	panic(err)
 	// }
 	// fmt.Println(matches)
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
 
 	// Get all tournaments for a specific date
 	r := mux.NewRouter()
@@ -33,7 +39,7 @@ func main() {
 	// Get matches
 	fmt.Println("Listening on :8080")
 
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatal(err)
 	}
 
