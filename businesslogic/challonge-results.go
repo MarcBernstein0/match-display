@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"path/filepath"
-	"runtime"
+	"os"
 	"sync"
 
 	"github.com/MarcBernstein0/match-display/ulits/errorhandling"
@@ -32,16 +30,17 @@ const API_URL = "https://api.challonge.com/v1"
 
 func init() {
 	// Open config file
-	_, f, _, _ := runtime.Caller(0)
-	rawConfig, err := ioutil.ReadFile(filepath.Dir(f) + "/../config.json") // will change path, problem with running test and running from main
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = json.Unmarshal(rawConfig, &config)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+	// _, f, _, _ := runtime.Caller(0)
+	// rawConfig, err := ioutil.ReadFile(filepath.Dir(f) + "/../config.json") // will change path, problem with running test and running from main
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// err = json.Unmarshal(rawConfig, &config)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	config.Username = os.Getenv("USER_NAME")
+	config.ApiKey = os.Getenv("API_KEY")
 	client = &http.Client{}
 }
 

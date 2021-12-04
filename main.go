@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/MarcBernstein0/match-display/controller"
@@ -11,7 +12,6 @@ import (
 const BASE_ROUTE = "/match-display/v1"
 
 func main() {
-	fmt.Println("Server Running")
 	// currentTime := time.Now()
 	// tournaments, err := businesslogic.GetTournamentData(currentTime.Format("2006-01-02"))
 	// if ok, err := errorhandling.HandleError("failed when calling GetTournamentData", err); ok {
@@ -31,6 +31,10 @@ func main() {
 	r.HandleFunc(fmt.Sprintf("%s/matches", BASE_ROUTE), controller.GetMatchData).Methods(http.MethodPost)
 
 	// Get matches
+	fmt.Println("Listening on :8080")
 
-	http.ListenAndServe(":8080", r)
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal(err)
+	}
+
 }
