@@ -76,6 +76,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	}
 	req.URL.RawQuery = q.Encode()
 	res, err := client.Do(req)
+	// TODO: check if result back http code
 	if ok, err := errorhandling.HandleError("failed to received response from challonge api.", err); ok {
 		return result{
 			data: nil,
