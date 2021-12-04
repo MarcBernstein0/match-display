@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -41,6 +42,7 @@ func init() {
 	// }
 	config.Username = os.Getenv("USER_NAME")
 	config.ApiKey = os.Getenv("API_KEY")
+	log.Printf("Config %+v\n", config)
 	client = &http.Client{}
 }
 
