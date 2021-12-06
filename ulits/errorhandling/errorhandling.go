@@ -7,12 +7,12 @@ import (
 	"runtime"
 )
 
-func HandleError(errorString string, err error) (bool, error) {
+func HandleError(errorString string, err error) error {
 	if err != nil {
 		_, fn, line, _ := runtime.Caller(1)
-		return true, fmt.Errorf("%s\n[error] %s:%d\n%v", errorString, fn, line, err)
+		return fmt.Errorf("%s\n[error] %s:%d\n%v", errorString, fn, line, err)
 	}
-	return false, nil
+	return nil
 }
 
 func FormatError(errorString string) error {

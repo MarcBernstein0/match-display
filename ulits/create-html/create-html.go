@@ -14,12 +14,12 @@ func CreateHtml(matches *businesslogic.Matches) (string, error) {
 	_, f, _, _ := runtime.Caller(0)
 	path := filepath.Dir(f)
 	t, err := template.ParseFiles(path + "/template.html")
-	if ok, err := errorhandling.HandleError("could not create template", err); ok {
+	if err = errorhandling.HandleError("could not create template", err); err != nil {
 		return "", err
 	}
 	var res bytes.Buffer
 	err = t.Execute(&res, matches)
-	if ok, err := errorhandling.HandleError("could not parse template file", err); ok {
+	if err = errorhandling.HandleError("could not parse template file", err); err != nil {
 		return "", err
 	}
 	return res.String(), nil

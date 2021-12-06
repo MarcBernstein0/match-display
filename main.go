@@ -37,7 +37,7 @@ func main() {
 	r.HandleFunc(fmt.Sprintf("%s/matches", BASE_ROUTE), controller.GetMatchData).Methods(http.MethodPost)
 
 	// Get matches
-	fmt.Println("Listening on :8080")
+	fmt.Println("Listening on :" + port)
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)

@@ -52,7 +52,7 @@ func getTournaments(date string, client HTTPClient) (*Tournaments, error) {
 
 	// create request to client
 	res := challongeApiCall(client, "tournaments", params)
-	if ok, err := errorhandling.HandleError("request failed in getTournaments.", res.err); ok {
+	if err := errorhandling.HandleError("request failed in getTournaments.", res.err); err != nil {
 		return nil, err
 	}
 
@@ -100,7 +100,7 @@ func (t *Tournaments) getParticipants(client HTTPClient) error {
 	}()
 
 	for resultsApi := range cResponse {
-		if ok, err := errorhandling.HandleError("request failed in getParticipants call.", resultsApi.err); ok {
+		if err := errorhandling.HandleError("request failed in getParticipants call.", resultsApi.err); err != nil {
 			return err
 		}
 		allApiResult = append(allApiResult, resultsApi)
@@ -154,7 +154,7 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 	}()
 
 	for apiResults := range cResponse {
-		if ok, err := errorhandling.HandleError("request failed in getMatches", apiResults.err); ok {
+		if err := errorhandling.HandleError("request failed in getMatches", apiResults.err); err != nil {
 			return nil, err
 		}
 		allAPIResults = append(allAPIResults, apiResults)
@@ -205,12 +205,12 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 func GetTournamentData(date string) (*Tournaments, error) {
 	fmt.Println("Getting tournament info")
 	tournaments, err := getTournaments(date, client)
-	if ok, err := errorhandling.HandleError("failed when calling getTournaments", err); ok {
+	if err = errorhandling.HandleError("failed when calling getTournaments", err); err != nil {
 		return nil, err
 	}
 	// fmt.Println(tournaments)
 	err = tournaments.getParticipants(client)
-	if ok, err := errorhandling.HandleError("failed when calling getParticipants", err); ok {
+	if err = errorhandling.HandleError("failed when calling getParticipants", err); err != nil {
 		return nil, err
 	}
 	// fmt.Println(tournaments)
@@ -220,7 +220,7 @@ func GetTournamentData(date string) (*Tournaments, error) {
 
 func (t *Tournaments) GetMatches() (*Matches, error) {
 	matches, err := t.getMatches(client)
-	if ok, err := errorhandling.HandleError("failed when calling getMatches", err); ok {
+	if err = errorhandling.HandleError("failed when calling getMatches", err); err != nil {
 		return nil, err
 	}
 	return matches, nil

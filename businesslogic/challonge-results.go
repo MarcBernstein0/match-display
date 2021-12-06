@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -42,7 +41,6 @@ func init() {
 	// }
 	config.Username = os.Getenv("USER_NAME")
 	config.ApiKey = os.Getenv("API_KEY")
-	log.Printf("Config %+v\n", config)
 	client = &http.Client{}
 }
 
@@ -63,7 +61,7 @@ return:
 func challongeApiCall(client HTTPClient, apiPath string, params map[string]string) result {
 	fullAPIPath := fmt.Sprintf("%s/%s.json", API_URL, apiPath)
 	req, err := http.NewRequest("GET", fullAPIPath, nil)
-	if ok, err := errorhandling.HandleError("failed to create request.", err); ok {
+	if err = errorhandling.HandleError("failed to create request.", err); err != nil {
 		return result{
 			data: nil,
 			err:  err,
@@ -78,7 +76,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	req.URL.RawQuery = q.Encode()
 	res, err := client.Do(req)
 	// TODO: check if result back http code
-	if ok, err := errorhandling.HandleError("failed to received response from challonge api.", err); ok {
+	if err = errorhandling.HandleError("failed to received response from challonge api.", err); err != nil {
 		return result{
 			data: nil,
 			err:  err,
@@ -86,7 +84,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	}
 	defer res.Body.Close()
 	resData, err := ioutil.ReadAll(res.Body)
-	if ok, err := errorhandling.HandleError("error when reading response body.", err); ok {
+	if err = errorhandling.HandleError("error when reading response body.", err); err != nil {
 		return result{
 			data: nil,
 			err:  err,
@@ -94,7 +92,7 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 	}
 	var tData []map[string]map[string]interface{}
 	err = json.Unmarshal([]byte(resData), &tData)
-	if ok, err := errorhandling.HandleError("failed to unmarshal json data", err); ok {
+	if err := errorhandling.HandleError("failed to unmarshal json data", err); err != nil {
 		return result{
 			data: nil,
 			err:  err,
