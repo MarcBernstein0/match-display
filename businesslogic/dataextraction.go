@@ -26,7 +26,7 @@ type Match struct {
 }
 
 type Matches struct {
-	MatchList []Match
+	MatchList []Match `json:"match_list"`
 }
 
 /* calls challenonge api to get all running tournaments

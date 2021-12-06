@@ -29,16 +29,6 @@ type HTTPClient interface {
 const API_URL = "https://api.challonge.com/v1"
 
 func init() {
-	// Open config file
-	// _, f, _, _ := runtime.Caller(0)
-	// rawConfig, err := ioutil.ReadFile(filepath.Dir(f) + "/../config.json") // will change path, problem with running test and running from main
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-	// err = json.Unmarshal(rawConfig, &config)
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
 	config.Username = os.Getenv("USER_NAME")
 	config.ApiKey = os.Getenv("API_KEY")
 	client = &http.Client{}
@@ -80,6 +70,13 @@ func challongeApiCall(client HTTPClient, apiPath string, params map[string]strin
 		return result{
 			data: nil,
 			err:  err,
+		}
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return result{
+			data: nil,
+			err:  errorhandling.FormatError("got a bad request back from challonge api\nstatus: " + res.Status),
 		}
 	}
 	defer res.Body.Close()
