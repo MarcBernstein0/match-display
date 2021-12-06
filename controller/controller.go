@@ -85,12 +85,5 @@ func GetMatchData(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	// htmlString, err := createhtml.CreateHtml(matches)
-	// if ok, err := errorhandling.HandleError("failed to convert tournament data to html", err); ok {
-	// 	log.Printf("Error with getting data\n%v", err)
-	// 	// w.WriteHeader(http.StatusInternalServerError)
-	// 	errorhandling.ErrorResponse(w, "Error with creating html string", http.StatusInternalServerError)
-	// 	return
-	// }
 	w.Write(data)
 }
