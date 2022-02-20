@@ -36,13 +36,13 @@ func TestHealthCheckController(t *testing.T) {
 }
 
 func TestTournamentController(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/match-display/v1/tournaments", nil)
+	req, err := http.NewRequest(http.MethodGet, "/match-display/v1/matches", nil)
 	if err != nil {
 		t.Fatalf("error in new request\n%v", err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(GetTournamentData)
+	handler := http.HandlerFunc(GetMatchData)
 
 	handler.ServeHTTP(rr, req)
 

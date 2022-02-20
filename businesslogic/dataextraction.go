@@ -44,11 +44,15 @@ func getTournaments(date string, client HTTPClient) (*Tournaments, error) {
 		TournamentList: make(map[int]tournament),
 	}
 
-	// parameters to pass in
 	params := map[string]string{
-		"state":         "in_progress",
-		"created_after": date,
+		"state": "in_progress",
 	}
+
+	if len(date) != 0 {
+		params["created_after"] = date
+	}
+
+	// parameters to pass in
 
 	// create request to client
 	res := challongeApiCall(client, "tournaments", params)
@@ -202,7 +206,9 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 	}, nil
 }
 
+// func GetTournamentData(date string) (*Tournaments, error) {
 func GetTournamentData(date string) (*Tournaments, error) {
+
 	fmt.Println("Getting tournament info")
 	tournaments, err := getTournaments(date, client)
 	if err = errorhandling.HandleError("failed when calling getTournaments", err); err != nil {
