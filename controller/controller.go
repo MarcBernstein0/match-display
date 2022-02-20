@@ -13,17 +13,18 @@ import (
 )
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// specifiy status code
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
 
 	// update response writer
 	io.WriteString(w, `{"alive": true}`)
 }
 
 func GetMatchData(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	v := r.URL.Query()
 
 	var dateStr string
