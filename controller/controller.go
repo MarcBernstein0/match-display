@@ -23,6 +23,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMatchData(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	w.Header().Set("Content-Type", "text/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	v := r.URL.Query()
@@ -60,4 +61,7 @@ func GetMatchData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+
+	elapsed := time.Since(start)
+	log.Printf("Data sent\n%s\n", elapsed)
 }
