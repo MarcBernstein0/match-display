@@ -197,6 +197,14 @@ func (t *Tournaments) getMatches(client HTTPClient) (*Matches, error) {
 
 	// order slices
 	sort.Slice(matchList, func(i, j int) bool {
+		// if the player names are the same, sort by round
+		if matchList[i].Player1Name == matchList[j].Player1Name {
+			// if the rounds are the same, sory by game
+			if matchList[i].Round >= matchList[j].Round {
+				return matchList[i].TournamentGameName <= matchList[j].TournamentGameName
+			}
+			return matchList[i].Round >= matchList[j].Round
+		}
 		return matchList[i].Player1Name <= matchList[j].Player1Name
 		// return false
 	})
