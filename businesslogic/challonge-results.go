@@ -31,7 +31,7 @@ const API_URL = "https://api.challonge.com/v1"
 func init() {
 	config.Username = os.Getenv("USER_NAME")
 	config.ApiKey = os.Getenv("API_KEY")
-	fmt.Println(config.ApiKey)
+	// fmt.Println(config.ApiKey)
 	client = &http.Client{}
 }
 
