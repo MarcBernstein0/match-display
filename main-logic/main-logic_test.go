@@ -142,42 +142,78 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestFetchData(t *testing.T) {
-	tt := []struct {
-		testName  string
-		wantData  []Tournaments
-		wantErr   error
-		expectErr bool
+// func TestFetchData(t *testing.T) {
+// 	tt := []struct {
+// 		testName  string
+// 		wantData  []Tournaments
+// 		wantErr   error
+// 		expectErr bool
+// 	}{
+// 		{
+// 			testName: "fetch tournaments test",
+// 			wantData: []Tournaments{
+// 				{
+// 					Tournament: struct {
+// 						Id   int    `json:"id"`
+// 						Name string `json:"name"`
+// 					}{
+// 						Id:   10878303,
+// 						Name: "BP GGST 3/4 ",
+// 					},
+// 				},
+// 			},
+// 			wantErr:   nil,
+// 			expectErr: false,
+// 		},
+// 		{
+// 			testName: "fetch participants test",
+// 		},
+// 	}
+
+// 	for _, test := range tt {
+// 		t.Run(test.testName, func(t *testing.T) {
+// 			t.Parallel()
+// 			gotData, gotErr := fetch.FetchTournamentData(context.Background(), time.Now().Local().Format("2006-01-02"))
+// 			assert.Equal(t, test.wantData, gotData)
+// 			// assert.Equal(t, test.wantData, gotData)
+// 			if test.expectErr {
+// 				assert.EqualError(t, gotErr, test.wantErr.Error(), "expected %v but got %v", test.wantErr.Error(), gotErr.Error())
+// 			} else {
+// 				assert.NoError(t, gotErr)
+// 			}
+// 		})
+// 	}
+// }
+
+func TestFetchTournaments(t *testing.T) {
+	testStruct := []struct {
+		wantData []Tournaments
+		wantErr  error
 	}{
-		{
-			testName: "default test",
-			wantData: []Tournaments{
-				{
-					Tournament: struct {
-						Id   int    `json:"id"`
-						Name string `json:"name"`
-					}{
-						Id:   10878303,
-						Name: "BP GGST 3/4 ",
-					},
+		{wantData: []Tournaments{
+			{
+				Tournament: struct {
+					Id   int    `json:"id"`
+					Name string `json:"name"`
+				}{
+					Id:   10878303,
+					Name: "BP GGST 3/4 ",
 				},
 			},
-			wantErr:   nil,
-			expectErr: false,
 		},
+			wantErr: nil},
 	}
 
-	for _, test := range tt {
-		t.Run(test.testName, func(t *testing.T) {
-			t.Parallel()
-			gotData, gotErr := fetch.FetchTournamentData(context.Background(), time.Now().Local().Format("2006-01-02"))
-			assert.Equal(t, test.wantData, gotData)
-			// assert.Equal(t, test.wantData, gotData)
-			if test.expectErr {
-				assert.EqualError(t, gotErr, test.wantErr.Error(), "expected %v but got %v", test.wantErr.Error(), gotErr.Error())
-			} else {
-				assert.NoError(t, gotErr)
-			}
-		})
+	for _, test := range testStruct {
+		t.Parallel()
+		gotData, gotErr := fetch.FetchTournamentData(context.Background(), time.Now().Local().Format("2006-01-02"))
+		assert.Equal(t, test.wantData, gotData)
+		assert.NoError(t, gotErr)
 	}
+	//
+}
+
+func TestFetchParticipantData(t *testing.T) {
+    testStruct := {
+    }
 }

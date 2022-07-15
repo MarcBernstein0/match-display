@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -39,7 +40,7 @@ type (
 
 	Fetch interface {
 		FetchTournamentData(ctx context.Context, date string) ([]Tournaments, error)
-		FetchParticipantData(ctx context.Context) ([]Participants, error)
+		FetchParticipantData(ctx context.Context, tournaments []Tournaments) ([]Participants, error)
 	}
 )
 
@@ -84,6 +85,31 @@ func (c *client) FetchTournamentData(ctx context.Context, date string) ([]Tourna
 	return tournaments, nil
 }
 
-func (c *client) FetchParticipantData(ctx context.Context) ([]Participants, error) {
+func (c *client) FetchParticipantData(ctx context.Context, tournaments []Tournaments) ([]Participants, error) {
+	var participants []Participants
+	cResponse := make(chan Participants)
+	cError := make(chan error)
+	var wg sync.WaitGroup
+	for _, tournament := range tournaments {
+		wg.Add(1)
+		go func(tournament Tournaments) {
+			// func to call api
+			fmt.Println(tournament)
+		}(tournament)
+	}
+
+	go func() {
+		wg.Wait()
+		close(cResponse)
+	}()
+
+	select {
+	case participant := <-cResponse:
+		participants = append(participants, participant)
+	case err := <-cError:
+		return nil, err
+		// case
+	}
+
 	return nil, nil
 }
