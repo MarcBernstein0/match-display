@@ -17,8 +17,8 @@ var (
 
 type (
 	participantResult struct {
-		gameParticipant *models.GameParticipants
-		error           error
+		tournamentParticipant *models.TournamentParticipants
+		error                 error
 	}
 	FetchData interface {
 		// FetchTournaments fetch all tournaments created after a specific date
@@ -26,9 +26,10 @@ type (
 		FetchTournaments(date string) ([]models.Tournament, error)
 		// FetchParticipants of a given tournament
 		// GET https://api.challonge.com/v1/tournaments/{tournament}/participants.{json|xml}
-		FetchParticipants(tournaments []models.Tournament) ([]models.GameParticipants, error)
+		FetchParticipants(tournaments []models.Tournament) ([]models.TournamentParticipants, error)
 		// FetchMatches of a given tournament
 		// GET https://api.challonge.com/v1/tournaments/{tournament}/matches.{json|xml}
+		// FetchMatches(tournaments []models)
 
 	}
 
@@ -71,7 +72,7 @@ func (c *customClient) FetchTournaments(date string) ([]models.Tournament, error
 	q := req.URL.Query()
 	q.Add("api_key", c.config.apiKey)
 	q.Add("state", "in_progress")
-	fmt.Println(date)
+	// fmt.Println(date)
 	q.Add("created_after", date)
 	req.URL.RawQuery = q.Encode()
 
@@ -111,8 +112,8 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 	if err != nil {
 		// return nil, err
 		participantResultChan <- participantResult{
-			gameParticipant: nil,
-			error:           err,
+			tournamentParticipant: nil,
+			error:                 err,
 		}
 		return
 	}
@@ -124,8 +125,8 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 	if err != nil {
 		// return nil, err
 		participantResultChan <- participantResult{
-			gameParticipant: nil,
-			error:           err,
+			tournamentParticipant: nil,
+			error:                 err,
 		}
 		return
 	}
@@ -134,8 +135,8 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 	if res.StatusCode != http.StatusOK {
 		// return nil, fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode))
 		participantResultChan <- participantResult{
-			gameParticipant: nil,
-			error:           fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode)),
+			tournamentParticipant: nil,
+			error:                 fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode)),
 		}
 		return
 	}
@@ -145,39 +146,39 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 	if len(participants) == 0 {
 		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
 		participantResultChan <- participantResult{
-			gameParticipant: nil,
-			error:           fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+			tournamentParticipant: nil,
+			error:                 fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
 		}
 		return
 	}
 	if err != nil {
 		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
 		participantResultChan <- participantResult{
-			gameParticipant: nil,
-			error:           fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError)),
+			tournamentParticipant: nil,
+			error:                 fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError)),
 		}
 		return
 	}
 	fmt.Printf("%+v, %v\n", participants, len(participants))
 
-	gameParticipant := models.GameParticipants{
+	tournamentParticipant := models.TournamentParticipants{
 		GameName:     gameName,
 		TournamentID: tournamentID,
 		Participant:  make([]models.Participant, 0),
 	}
 	for _, p := range participants {
-		gameParticipant.Participant = append(gameParticipant.Participant, p.Participant)
+		tournamentParticipant.Participant = append(tournamentParticipant.Participant, p.Participant)
 	}
 
 	participantResultChan <- participantResult{
-		gameParticipant: &gameParticipant,
-		error:           nil,
+		tournamentParticipant: &tournamentParticipant,
+		error:                 nil,
 	}
 
 }
 
-func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]models.GameParticipants, error) {
-	var gameParticipants []models.GameParticipants
+func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]models.TournamentParticipants, error) {
+	var tournamentParticipants []models.TournamentParticipants
 
 	cResponse := make(chan participantResult)
 	var wg sync.WaitGroup
@@ -191,14 +192,14 @@ func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]mod
 		close(cResponse)
 	}()
 
-	for gameParticipantResult := range cResponse {
-		if gameParticipantResult.error != nil {
-			return nil, gameParticipantResult.error
+	for tournamentParticipantResult := range cResponse {
+		if tournamentParticipantResult.error != nil {
+			return nil, tournamentParticipantResult.error
 		}
-		gameParticipants = append(gameParticipants, *gameParticipantResult.gameParticipant)
+		tournamentParticipants = append(tournamentParticipants, *tournamentParticipantResult.tournamentParticipant)
 
 	}
 
-	fmt.Printf("Final game participants: %+v", gameParticipants)
-	return gameParticipants, nil
+	fmt.Printf("Final game participants: %+v", tournamentParticipants)
+	return tournamentParticipants, nil
 }

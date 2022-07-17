@@ -8,7 +8,7 @@ type (
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}
-	GameParticipants struct {
+	TournamentParticipants struct {
 		GameName     string        `json:"game_name"`
 		TournamentID int           `json:"tournament_id"`
 		Participant  []Participant `json:"participant"`

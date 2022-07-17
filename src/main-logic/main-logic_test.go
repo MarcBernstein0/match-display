@@ -207,7 +207,7 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 		name      string
 		fetchData FetchData
 		inputData []models.Tournament
-		wantData  []models.GameParticipants
+		wantData  []models.TournamentParticipants
 		wantErr   error
 	}{
 		{
@@ -237,7 +237,7 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 					GameName: "Guilty Gear -Strive-",
 				},
 			},
-			wantData: []models.GameParticipants{
+			wantData: []models.TournamentParticipants{
 				{
 					GameName:     "Guilty Gear -Strive-",
 					TournamentID: 10879090,
@@ -280,7 +280,7 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 					GameName: "DNF Duel",
 				},
 			},
-			wantData: []models.GameParticipants{
+			wantData: []models.TournamentParticipants{
 				{
 					GameName:     "Guilty Gear -Strive-",
 					TournamentID: 10879090,
