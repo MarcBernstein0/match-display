@@ -83,18 +83,6 @@ func mockFetchParticipantEndpoint(w http.ResponseWriter, r *http.Request) {
 	sc := http.StatusOK
 	w.WriteHeader(sc)
 
-	// jsonFile, err := os.Open("./test-data/testParticipantData.json")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	return
-	// }
-	// fmt.Println("Successfully Opened users.json")
-
-	// defer jsonFile.Close()
-
-	// byteValue, _ := io.ReadAll(jsonFile)
-
 	byteValue, err := readJsonFile("./test-data/testParticipantData.json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -218,6 +206,7 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 	tt := []struct {
 		name      string
 		fetchData FetchData
+		inputData []models.Tournament
 		wantData  []models.GameParticipants
 		wantErr   error
 	}{
@@ -226,6 +215,13 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 			fetchData: func(baseURL, username, apiKey string, client *http.Client) *customClient {
 				return New(baseURL, username, apiKey, client)
 			}(server.URL, "ashdfhsf", "asdfhdsfh", http.DefaultClient),
+			inputData: []models.Tournament{
+				{
+					ID:       10879090,
+					Name:     "test",
+					GameName: "Guilty Gear -Strive-",
+				},
+			},
 			wantData: nil,
 			wantErr:  fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(http.StatusUnauthorized)),
 		},
@@ -234,6 +230,13 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 			fetchData: func(baseURL, username, apiKey string, client *http.Client) *customClient {
 				return New(baseURL, username, apiKey, client)
 			}(server.URL, MOCK_API_USERNAME, MOCK_API_KEY, http.DefaultClient),
+			inputData: []models.Tournament{
+				{
+					ID:       10879090,
+					Name:     "test",
+					GameName: "Guilty Gear -Strive-",
+				},
+			},
 			wantData: []models.GameParticipants{
 				{
 					GameName:     "Guilty Gear -Strive-",
@@ -265,6 +268,18 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 			fetchData: func(baseURL, username, apiKey string, client *http.Client) *customClient {
 				return New(baseURL, username, apiKey, client)
 			}(server.URL, MOCK_API_USERNAME, MOCK_API_KEY, http.DefaultClient),
+			inputData: []models.Tournament{
+				{
+					ID:       10879090,
+					Name:     "test",
+					GameName: "Guilty Gear -Strive-",
+				},
+				{
+					ID:       10879091,
+					Name:     "test2",
+					GameName: "DNF Duel",
+				},
+			},
 			wantData: []models.GameParticipants{
 				{
 					GameName:     "Guilty Gear -Strive-",
@@ -319,14 +334,8 @@ func TestCustomClient_FetchParticipants(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			gotData, gotErr := testCase.fetchData.FetchParicipants([]models.Tournament{
-				{
-					ID:       10879090,
-					Name:     "test",
-					GameName: "Guilty Gear -Strive-",
-				},
-			})
-			assert.Equal(t, testCase.wantData, gotData)
+			gotData, gotErr := testCase.fetchData.FetchParticipants(testCase.inputData)
+			assert.ElementsMatch(t, testCase.wantData, gotData)
 			if testCase.wantErr != nil {
 				assert.EqualError(t, gotErr, testCase.wantErr.Error())
 			} else {

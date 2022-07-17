@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/MarcBernstein0/match-display/src/models"
 )
@@ -15,13 +16,17 @@ var (
 )
 
 type (
+	participantResult struct {
+		gameParticipant *models.GameParticipants
+		error           error
+	}
 	FetchData interface {
 		// FetchTournaments fetch all tournaments created after a specific date
 		// GET https://api.challonge.com/v1/tournaments.{json|xml}
 		FetchTournaments(date string) ([]models.Tournament, error)
-		// FetchParicipants of a given tournament
+		// FetchParticipants of a given tournament
 		// GET https://api.challonge.com/v1/tournaments/{tournament}/participants.{json|xml}
-		FetchParicipants(tournaments []models.Tournament) ([]models.GameParticipants, error)
+		FetchParticipants(tournaments []models.Tournament) ([]models.GameParticipants, error)
 		// FetchMatches of a given tournament
 		// GET https://api.challonge.com/v1/tournaments/{tournament}/matches.{json|xml}
 
@@ -96,17 +101,20 @@ func (c *customClient) FetchTournaments(date string) ([]models.Tournament, error
 	return tournamentList, err
 }
 
-func (c *customClient) FetchParicipants(tournaments []models.Tournament) ([]models.GameParticipants, error) {
-	// final list of all participants for all tournaments
-	var gameParticipants []models.GameParticipants
-
-	tournametID := tournaments[0].ID
-	gameName := tournaments[0].GameName
-	url := fmt.Sprintf("%s/tournaments/%v/participants.json", c.baseURL, tournametID)
+func (c *customClient) fetchAllParticipants(tournament models.Tournament, participantResultChan chan<- participantResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+	tournamentID := tournament.ID
+	gameName := tournament.GameName
+	url := fmt.Sprintf("%s/tournaments/%v/participants.json", c.baseURL, tournamentID)
 	// fmt.Println(url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		// return nil, err
+		participantResultChan <- participantResult{
+			gameParticipant: nil,
+			error:           err,
+		}
+		return
 	}
 	q := req.URL.Query()
 	q.Add("api_key", c.config.apiKey)
@@ -114,34 +122,83 @@ func (c *customClient) FetchParicipants(tournaments []models.Tournament) ([]mode
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		// return nil, err
+		participantResultChan <- participantResult{
+			gameParticipant: nil,
+			error:           err,
+		}
+		return
 	}
 
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode))
+		// return nil, fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode))
+		participantResultChan <- participantResult{
+			gameParticipant: nil,
+			error:           fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode)),
+		}
+		return
 	}
 
 	var participants models.Participants
 	err = json.NewDecoder(res.Body).Decode(&participants)
 	if len(participants) == 0 {
-		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
+		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
+		participantResultChan <- participantResult{
+			gameParticipant: nil,
+			error:           fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+		}
+		return
 	}
 	if err != nil {
-		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
+		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
+		participantResultChan <- participantResult{
+			gameParticipant: nil,
+			error:           fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError)),
+		}
+		return
 	}
 	fmt.Printf("%+v, %v\n", participants, len(participants))
 
 	gameParticipant := models.GameParticipants{
 		GameName:     gameName,
-		TournamentID: tournametID,
+		TournamentID: tournamentID,
 		Participant:  make([]models.Participant, 0),
 	}
 	for _, p := range participants {
 		gameParticipant.Participant = append(gameParticipant.Participant, p.Participant)
 	}
 
-	gameParticipants = append(gameParticipants, gameParticipant)
-	fmt.Println(gameParticipants)
+	participantResultChan <- participantResult{
+		gameParticipant: &gameParticipant,
+		error:           nil,
+	}
+
+}
+
+func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]models.GameParticipants, error) {
+	var gameParticipants []models.GameParticipants
+
+	cResponse := make(chan participantResult)
+	var wg sync.WaitGroup
+	for _, tournament := range tournaments {
+		wg.Add(1) // add one to the waitgroup
+		go c.fetchAllParticipants(tournament, cResponse, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(cResponse)
+	}()
+
+	for gameParticipantResult := range cResponse {
+		if gameParticipantResult.error != nil {
+			return nil, gameParticipantResult.error
+		}
+		gameParticipants = append(gameParticipants, *gameParticipantResult.gameParticipant)
+
+	}
+
+	fmt.Printf("Final game participants: %+v", gameParticipants)
 	return gameParticipants, nil
 }
