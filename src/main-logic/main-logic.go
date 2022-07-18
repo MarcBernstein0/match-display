@@ -29,8 +29,7 @@ type (
 		FetchParticipants(tournaments []models.Tournament) ([]models.TournamentParticipants, error)
 		// FetchMatches of a given tournament
 		// GET https://api.challonge.com/v1/tournaments/{tournament}/matches.{json|xml}
-		// FetchMatches(tournaments []models)
-
+		FetchMatches(tournamentParticipants []models.TournamentParticipants) ([]models.TournamentMatches, error)
 	}
 
 	customClient struct {
@@ -164,10 +163,10 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 	tournamentParticipant := models.TournamentParticipants{
 		GameName:     gameName,
 		TournamentID: tournamentID,
-		Participant:  make([]models.Participant, 0),
+		Participant:  map[int]string{},
 	}
 	for _, p := range participants {
-		tournamentParticipant.Participant = append(tournamentParticipant.Participant, p.Participant)
+		tournamentParticipant.Participant[p.Participant.ID] = p.Participant.Name
 	}
 
 	participantResultChan <- participantResult{
@@ -202,4 +201,58 @@ func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]mod
 
 	fmt.Printf("Final game participants: %+v", tournamentParticipants)
 	return tournamentParticipants, nil
+}
+
+func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentParticipants) ([]models.TournamentMatches, error) {
+
+	// TODO: use channels to be able to do this for multiple tournaments all at once
+	var allMatches []models.TournamentMatches
+	tournamentID := tournamentParticipants[0].TournamentID
+	gameName := tournamentParticipants[0].GameName
+
+	participants := tournamentParticipants[0].Participant
+	url := fmt.Sprintf("%s/tournaments/%v/matches.json", c.baseURL, tournamentID)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("api_key", c.config.apiKey)
+	q.Add("state", "open")
+	// fmt.Println(date)
+	req.URL.RawQuery = q.Encode()
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode))
+	}
+
+	var matches models.Matches
+	err = json.NewDecoder(res.Body).Decode(&matches)
+	if err != nil {
+		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
+	}
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
+	}
+	fmt.Printf("%+v\n", matches)
+	tournamentMatches := models.TournamentMatches{
+		GameName:     gameName,
+		TournamentID: tournamentID,
+		MatchList:    make([]models.Match, 0),
+	}
+	for _, m := range matches {
+		m.Match.Player1Name = participants[m.Match.Player1ID]
+		m.Match.Player2Name = participants[m.Match.Player2ID]
+		tournamentMatches.MatchList = append(tournamentMatches.MatchList, m.Match)
+	}
+	fmt.Printf("%+v\n", tournamentMatches)
+	allMatches = append(allMatches, tournamentMatches)
+
+	return allMatches, nil
 }
