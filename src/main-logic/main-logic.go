@@ -20,6 +20,10 @@ type (
 		tournamentParticipant *models.TournamentParticipants
 		error                 error
 	}
+	matchResult struct {
+		tournamentMatches *models.TournamentMatches
+		error             error
+	}
 	FetchData interface {
 		// FetchTournaments fetch all tournaments created after a specific date
 		// GET https://api.challonge.com/v1/tournaments.{json|xml}
@@ -203,18 +207,21 @@ func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]mod
 	return tournamentParticipants, nil
 }
 
-func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentParticipants) ([]models.TournamentMatches, error) {
+func (c *customClient) fetchAllMatches(tournamentParticiapnt models.TournamentParticipants, matchResultChan chan<- matchResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+	tournamentID := tournamentParticiapnt.TournamentID
+	gameName := tournamentParticiapnt.GameName
+	participants := tournamentParticiapnt.Participant
 
-	// TODO: use channels to be able to do this for multiple tournaments all at once
-	var allMatches []models.TournamentMatches
-	tournamentID := tournamentParticipants[0].TournamentID
-	gameName := tournamentParticipants[0].GameName
+	fmt.Println(tournamentID, gameName, participants)
 
-	participants := tournamentParticipants[0].Participant
-	url := fmt.Sprintf("%s/tournaments/%v/matches.json", c.baseURL, tournamentID)
+	url := fmt.Sprintf("%v/tournaments/%v/matches.json", c.baseURL, tournamentID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		matchResultChan <- matchResult{
+			tournamentMatches: nil,
+			error:             err,
+		}
 	}
 	q := req.URL.Query()
 	q.Add("api_key", c.config.apiKey)
@@ -224,23 +231,36 @@ func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentPa
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		matchResultChan <- matchResult{
+			tournamentMatches: nil,
+			error:             err,
+		}
 	}
 
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode))
+		matchResultChan <- matchResult{
+			tournamentMatches: nil,
+			error:             fmt.Errorf("%w. %s", ErrResponseNotOK, http.StatusText(res.StatusCode)),
+		}
 	}
 
 	var matches models.Matches
 	err = json.NewDecoder(res.Body).Decode(&matches)
 	if err != nil {
-		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
+		matchResultChan <- matchResult{
+			tournamentMatches: nil,
+			error:             fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError)),
+		}
+		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
 	}
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
+		matchResultChan <- matchResult{
+			tournamentMatches: nil,
+			error:             fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+		}
+		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
 	}
-	fmt.Printf("%+v\n", matches)
 	tournamentMatches := models.TournamentMatches{
 		GameName:     gameName,
 		TournamentID: tournamentID,
@@ -252,7 +272,37 @@ func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentPa
 		tournamentMatches.MatchList = append(tournamentMatches.MatchList, m.Match)
 	}
 	fmt.Printf("%+v\n", tournamentMatches)
-	allMatches = append(allMatches, tournamentMatches)
 
-	return allMatches, nil
+	matchResultChan <- matchResult{
+		tournamentMatches: &tournamentMatches,
+		error:             nil,
+	}
+}
+
+func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentParticipants) ([]models.TournamentMatches, error) {
+
+	var tournamentMatches []models.TournamentMatches
+
+	cResponse := make(chan matchResult)
+	var wg sync.WaitGroup
+	for _, tournamentParticiapnt := range tournamentParticipants {
+		wg.Add(1) // add one to the waitgroup
+		go c.fetchAllMatches(tournamentParticiapnt, cResponse, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(cResponse)
+	}()
+
+	for tournamentMatchResult := range cResponse {
+		fmt.Printf("%+v", tournamentMatchResult.tournamentMatches)
+		if tournamentMatchResult.error != nil {
+			return nil, tournamentMatchResult.error
+		}
+		tournamentMatches = append(tournamentMatches, *tournamentMatchResult.tournamentMatches)
+	}
+
+	fmt.Printf("All matches: %+v\n", tournamentMatches)
+	return tournamentMatches, nil
 }
