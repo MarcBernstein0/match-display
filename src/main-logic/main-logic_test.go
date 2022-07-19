@@ -515,7 +515,7 @@ func TestCustomClient_FetchMatches(t *testing.T) {
 
 	for _, testCase := range tt {
 		t.Run(testCase.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 			gotData, gotErr := testCase.fetchData.FetchMatches(testCase.inputData)
 			assert.ElementsMatch(t, testCase.wantData, gotData)
 			if testCase.wantErr != nil {

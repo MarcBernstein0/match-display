@@ -13,6 +13,7 @@ import (
 var (
 	ErrResponseNotOK error = errors.New("response not ok")
 	ErrServerProblem error = errors.New("server error")
+	ErrNoData        error = errors.New("no data found")
 )
 
 type (
@@ -91,11 +92,11 @@ func (c *customClient) FetchTournaments(date string) ([]models.Tournament, error
 
 	var tournaments models.Tournaments
 	err = json.NewDecoder(res.Body).Decode(&tournaments)
-	if len(tournaments) == 0 {
-		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
-	}
 	if err != nil {
 		return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusInternalServerError))
+	}
+	if len(tournaments) == 0 {
+		return nil, fmt.Errorf("%w. %s", ErrNoData, http.StatusText(http.StatusNotFound))
 	}
 	fmt.Printf("%+v, %v\n", tournaments, len(tournaments))
 	var tournamentList []models.Tournament
@@ -150,7 +151,7 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
 		participantResultChan <- participantResult{
 			tournamentParticipant: nil,
-			error:                 fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+			error:                 fmt.Errorf("%w. %s", ErrNoData, http.StatusText(http.StatusNotFound)),
 		}
 		return
 	}
@@ -257,7 +258,7 @@ func (c *customClient) fetchAllMatches(tournamentParticiapnt models.TournamentPa
 	if len(matches) == 0 {
 		matchResultChan <- matchResult{
 			tournamentMatches: nil,
-			error:             fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+			error:             fmt.Errorf("%w. %s", ErrNoData, http.StatusText(http.StatusNotFound)),
 		}
 		// return nil, fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound))
 	}

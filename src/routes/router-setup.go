@@ -9,7 +9,7 @@ func RouteSetup(fetchData mainlogic.FetchData) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", HealthCheck)
-	// r.GET("/matches", MatchesGET(fetchData))
+	r.GET("/matches", MatchesGET(fetchData))
 
 	return r
 }
