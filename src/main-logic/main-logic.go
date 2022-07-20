@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"sync"
 
 	"github.com/MarcBernstein0/match-display/src/models"
@@ -302,6 +303,14 @@ func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentPa
 		if tournamentMatchResult.error != nil {
 			return nil, tournamentMatchResult.error
 		}
+		sort.SliceStable(tournamentMatchResult.tournamentMatches.MatchList, func(i, j int) bool {
+			matchList := tournamentMatchResult.tournamentMatches.MatchList
+			// sort the same name if round matches
+			if matchList[i].Round == matchList[j].Round {
+				return matchList[i].Player1Name <= matchList[j].Player1Name
+			}
+			return matchList[i].Round < matchList[j].Round
+		})
 		tournamentMatches = append(tournamentMatches, *tournamentMatchResult.tournamentMatches)
 	}
 
