@@ -79,6 +79,7 @@ func (c *customClient) FetchTournaments(date string) ([]models.Tournament, error
 	// fmt.Println(date)
 	q.Add("created_after", date)
 	req.URL.RawQuery = q.Encode()
+	// fmt.Printf("%v\n", req.URL)
 
 	res, err := c.client.Do(req)
 	if err != nil {
