@@ -31,7 +31,7 @@ func MatchesGET(fetchData mainlogic.FetchData) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, errResponse)
 			return
 		}
-		fmt.Printf("%+v\n", date)
+		// fmt.Printf("%+v\n", date)
 		// get date
 		// call tournaments
 		tournaments, err := fetchData.FetchTournaments(date.Date.Format("2006-01-02"))
@@ -43,10 +43,31 @@ func MatchesGET(fetchData mainlogic.FetchData) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, errResponse)
 			return
 		}
-		fmt.Println(tournaments, err)
+		fmt.Printf("tournaments %+v\n", tournaments)
 		// call particiapnts
+		participants, err := fetchData.FetchParticipants(tournaments)
+		if err != nil {
+			errResponse := models.ErrorResponse{
+				Message:      "failed to get participant data",
+				ErrorMessage: err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, errResponse)
+			return
+		}
+		fmt.Printf("list of participants %+v\n", participants)
 		// call matches
+		matches, err := fetchData.FetchMatches(participants)
+		if err != nil {
+			errResponse := models.ErrorResponse{
+				Message:      "failed to get match data",
+				ErrorMessage: err.Error(),
+			}
+			c.JSON(http.StatusInternalServerError, errResponse)
+			return
+		}
+		fmt.Printf("list of matches %+v\n", matches)
 		// return matches
+		c.JSON(http.StatusOK, matches)
 	}
 	return fn
 }

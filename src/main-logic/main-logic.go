@@ -98,7 +98,7 @@ func (c *customClient) FetchTournaments(date string) ([]models.Tournament, error
 	if len(tournaments) == 0 {
 		return nil, fmt.Errorf("%w. %s", ErrNoData, http.StatusText(http.StatusNotFound))
 	}
-	fmt.Printf("%+v, %v\n", tournaments, len(tournaments))
+	// fmt.Printf("%+v, %v\n", tournaments, len(tournaments))
 	var tournamentList []models.Tournament
 	for _, t := range tournaments {
 		tournamentList = append(tournamentList, t.Tournament)
@@ -163,7 +163,7 @@ func (c *customClient) fetchAllParticipants(tournament models.Tournament, partic
 		}
 		return
 	}
-	fmt.Printf("%+v, %v\n", participants, len(participants))
+	// fmt.Printf("%+v, %v\n", participants, len(participants))
 
 	tournamentParticipant := models.TournamentParticipants{
 		GameName:     gameName,
@@ -204,7 +204,7 @@ func (c *customClient) FetchParticipants(tournaments []models.Tournament) ([]mod
 
 	}
 
-	fmt.Printf("Final game participants: %+v", tournamentParticipants)
+	// fmt.Printf("Final game participants: %+v", tournamentParticipants)
 	return tournamentParticipants, nil
 }
 
@@ -214,7 +214,7 @@ func (c *customClient) fetchAllMatches(tournamentParticiapnt models.TournamentPa
 	gameName := tournamentParticiapnt.GameName
 	participants := tournamentParticiapnt.Participant
 
-	fmt.Println(tournamentID, gameName, participants)
+	// fmt.Println(tournamentID, gameName, participants)
 
 	url := fmt.Sprintf("%v/tournaments/%v/matches.json", c.baseURL, tournamentID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -272,7 +272,7 @@ func (c *customClient) fetchAllMatches(tournamentParticiapnt models.TournamentPa
 		m.Match.Player2Name = participants[m.Match.Player2ID]
 		tournamentMatches.MatchList = append(tournamentMatches.MatchList, m.Match)
 	}
-	fmt.Printf("%+v\n", tournamentMatches)
+	// fmt.Printf("%+v\n", tournamentMatches)
 
 	matchResultChan <- matchResult{
 		tournamentMatches: &tournamentMatches,
@@ -297,13 +297,13 @@ func (c *customClient) FetchMatches(tournamentParticipants []models.TournamentPa
 	}()
 
 	for tournamentMatchResult := range cResponse {
-		fmt.Printf("%+v", tournamentMatchResult.tournamentMatches)
+		// fmt.Printf("%+v", tournamentMatchResult.tournamentMatches)
 		if tournamentMatchResult.error != nil {
 			return nil, tournamentMatchResult.error
 		}
 		tournamentMatches = append(tournamentMatches, *tournamentMatchResult.tournamentMatches)
 	}
 
-	fmt.Printf("All matches: %+v\n", tournamentMatches)
+	// fmt.Printf("All matches: %+v\n", tournamentMatches)
 	return tournamentMatches, nil
 }

@@ -41,7 +41,6 @@ func readJsonFile(filename string) ([]byte, error) {
 		fmt.Println(err)
 		return nil, err
 	}
-	fmt.Println("Successfully Opened users.json")
 
 	defer jsonFile.Close()
 
@@ -72,40 +71,117 @@ func mockFetchTournamentEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	byteValue, err := readJsonFile("./test-data/testTournamentData.json")
+	if date == "2022-07-19" {
+		byteValue, err := readJsonFile("./test-data/testTournamentData.json")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		w.Write(byteValue)
+	} else {
+		byteValue, err := readJsonFile("./test-data/testTournamentData2.json")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		w.Write(byteValue)
+	}
+
+}
+
+func mockFetchParticipantEndpoint(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.URL.Query().Get("api_key")
+	if !testApiKeyAuth(apiKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	sc := http.StatusOK
+	w.WriteHeader(sc)
+
+	byteValue, err := readJsonFile("./test-data/testParticipantData.json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	// fmt.Println(string(byteValue))
 
 	w.Write(byteValue)
 }
 
-// func mockFetchMatchDataEndpoint(w http.ResponseWriter, r *http.Request) {
-// 	apiKey := r.URL.Query().Get("api_key")
-// 	if !testApiKeyAuth(apiKey) {
-// 		w.WriteHeader(http.StatusUnauthorized)
-// 		return
-// 	}
+func mockFetchParticipantEndpoint2(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.URL.Query().Get("api_key")
+	if !testApiKeyAuth(apiKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
-// 	sc := http.StatusOK
-// 	w.WriteHeader(sc)
-// 	date := r.URL.Query().Get("created_after")
-// 	if date == "2022-07-20" {
-// 		w.Write([]byte("[]"))
-// 		return
-// 	}
-// 	byteValue, err := readJsonFile("./test-data/testTournamentData.json")
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		w.Write([]byte(err.Error()))
-// 		return
-// 	}
+	sc := http.StatusOK
+	w.WriteHeader(sc)
 
-// 	w.Write(byteValue)
-// }
+	jsonFile, err := os.Open("./test-data/testParticipantData.json")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	defer jsonFile.Close()
+
+	byteValue, _ := io.ReadAll(jsonFile)
+
+	w.Write(byteValue)
+}
+
+func mockFetchMatchesEndpoint(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.URL.Query().Get("api_key")
+	if !testApiKeyAuth(apiKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	sc := http.StatusOK
+	w.WriteHeader(sc)
+
+	jsonFile, err := os.Open("./test-data/testMatchesData.json")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	defer jsonFile.Close()
+
+	byteValue, _ := io.ReadAll(jsonFile)
+
+	w.Write(byteValue)
+}
+
+func mockFetchMatchesEndpoint2(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.URL.Query().Get("api_key")
+	if !testApiKeyAuth(apiKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	sc := http.StatusOK
+	w.WriteHeader(sc)
+
+	jsonFile, err := os.Open("./test-data/testMatchesData2.json")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	defer jsonFile.Close()
+
+	byteValue, _ := io.ReadAll(jsonFile)
+
+	w.Write(byteValue)
+}
 
 func TestMain(m *testing.M) {
 
@@ -117,8 +193,14 @@ func TestMain(m *testing.M) {
 			mockFetchMockDataEndpoint(w, r)
 		case "/tournaments.json":
 			mockFetchTournamentEndpoint(w, r)
-		// case "/":
-		// 	mockFetchMatchDataEndpoint(w, r)
+		case "/tournaments/10879090/participants.json":
+			mockFetchParticipantEndpoint(w, r)
+		case "/tournaments/10879091/participants.json":
+			mockFetchParticipantEndpoint2(w, r)
+		case "/tournaments/10879090/matches.json":
+			mockFetchMatchesEndpoint(w, r)
+		case "/tournaments/10879091/matches.json":
+			mockFetchMatchesEndpoint2(w, r)
 		default:
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
@@ -170,88 +252,89 @@ func TestGetMatchesRoute(t *testing.T) {
 				ErrorMessage: fmt.Errorf("%w. %s", mainlogic.ErrNoData, http.StatusText(http.StatusNotFound)).Error(),
 			},
 		},
-		// {
-		// 	name:       "single tournament",
-		// 	date:       "2022-07-19",
-		// 	statusCode: http.StatusOK,
-		// 	wantData: []models.TournamentMatches{
-		// 		{
-		// 			GameName:     "Guilty Gear -Strive-",
-		// 			TournamentID: 10879090,
-		// 			MatchList: []models.Match{
-		// 				{
-		// 					ID:          267800918,
-		// 					Player1ID:   166014671,
-		// 					Player1Name: "test",
-		// 					Player2ID:   166014674,
-		// 					Player2Name: "test4",
-		// 					Round:       1,
-		// 				},
-		// 				{
-		// 					ID:          267800919,
-		// 					Player1ID:   166014672,
-		// 					Player1Name: "test2",
-		// 					Player2ID:   166014673,
-		// 					Player2Name: "test3",
-		// 					Round:       1,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: nil,
-		// },
-		// {
-		// 	name:       "multiple tournaments",
-		// 	date:       time.Now().Local().Format("2006-01-02"),
-		// 	statusCode: http.StatusOK,
-		// 	wantData: []models.TournamentMatches{
-		// 		{
-		// 			GameName:     "Guilty Gear -Strive-",
-		// 			TournamentID: 10879090,
-		// 			MatchList: []models.Match{
-		// 				{
-		// 					ID:          267800918,
-		// 					Player1ID:   166014671,
-		// 					Player1Name: "test",
-		// 					Player2ID:   166014674,
-		// 					Player2Name: "test4",
-		// 					Round:       1,
-		// 				},
-		// 				{
-		// 					ID:          267800919,
-		// 					Player1ID:   166014672,
-		// 					Player1Name: "test2",
-		// 					Player2ID:   166014673,
-		// 					Player2Name: "test3",
-		// 					Round:       1,
-		// 				},
-		// 			},
-		// 		},
-		// 		{
-		// 			GameName:     "DNF Duel",
-		// 			TournamentID: 10879091,
-		// 			MatchList: []models.Match{
-		// 				{
-		// 					ID:          267800918,
-		// 					Player1ID:   166014671,
-		// 					Player1Name: "test",
-		// 					Player2ID:   166014674,
-		// 					Player2Name: "test4",
-		// 					Round:       1,
-		// 				},
-		// 				{
-		// 					ID:          267800919,
-		// 					Player1ID:   166014672,
-		// 					Player1Name: "test2",
-		// 					Player2ID:   166014673,
-		// 					Player2Name: "test3",
-		// 					Round:       1,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: nil,
-		// },
+		{
+			name:       "single tournament",
+			date:       "2022-07-19",
+			statusCode: http.StatusOK,
+			wantData: []models.TournamentMatches{
+				{
+					GameName:     "Guilty Gear -Strive-",
+					TournamentID: 10879090,
+					MatchList: []models.Match{
+						{
+							ID:          267800918,
+							Player1ID:   166014671,
+							Player1Name: "test",
+							Player2ID:   166014674,
+							Player2Name: "test4",
+							Round:       1,
+						},
+						{
+							ID:          267800919,
+							Player1ID:   166014672,
+							Player1Name: "test2",
+							Player2ID:   166014673,
+							Player2Name: "test3",
+							Round:       1,
+						},
+					},
+				},
+			},
+			expectErr: false,
+			wantErr:   models.ErrorResponse{},
+		},
+		{
+			name:       "multiple tournaments",
+			date:       "2022-07-18",
+			statusCode: http.StatusOK,
+			wantData: []models.TournamentMatches{
+				{
+					GameName:     "Guilty Gear -Strive-",
+					TournamentID: 10879090,
+					MatchList: []models.Match{
+						{
+							ID:          267800918,
+							Player1ID:   166014671,
+							Player1Name: "test",
+							Player2ID:   166014674,
+							Player2Name: "test4",
+							Round:       1,
+						},
+						{
+							ID:          267800919,
+							Player1ID:   166014672,
+							Player1Name: "test2",
+							Player2ID:   166014673,
+							Player2Name: "test3",
+							Round:       1,
+						},
+					},
+				},
+				{
+					GameName:     "DNF Duel",
+					TournamentID: 10879091,
+					MatchList: []models.Match{
+						{
+							ID:          267800918,
+							Player1ID:   166014671,
+							Player1Name: "test",
+							Player2ID:   166014674,
+							Player2Name: "test4",
+							Round:       1,
+						},
+						{
+							ID:          267800919,
+							Player1ID:   166014672,
+							Player1Name: "test2",
+							Player2ID:   166014673,
+							Player2Name: "test3",
+							Round:       1,
+						},
+					},
+				},
+			},
+			wantErr: models.ErrorResponse{},
+		},
 	}
 
 	router := RouteSetup(mockFetch)
@@ -280,6 +363,7 @@ func TestGetMatchesRoute(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to decode error response %v", err)
 				}
+				fmt.Printf("resulting data %+v\n", gotData)
 				assert.ElementsMatch(t, testCase.wantData, gotData)
 			}
 		})
