@@ -1,1 +1,5 @@
 config.json
+old-code/
+main-logic_old/
+.env
+.vscode
