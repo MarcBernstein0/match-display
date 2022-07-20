@@ -218,7 +218,7 @@ func TestHealthCheckRoute(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, `{"status": "UP"}`, w.Body.String())
+	assert.Equal(t, `{"status":"UP"}`, w.Body.String())
 }
 
 func TestGetMatchesRoute(t *testing.T) {

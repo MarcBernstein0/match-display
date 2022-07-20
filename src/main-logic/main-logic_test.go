@@ -37,7 +37,6 @@ func readJsonFile(filename string) ([]byte, error) {
 		fmt.Println(err)
 		return nil, err
 	}
-	fmt.Println("Successfully Opened users.json")
 
 	defer jsonFile.Close()
 
@@ -110,7 +109,6 @@ func mockFetchParticipantEndpoint2(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Successfully Opened users.json")
 
 	defer jsonFile.Close()
 
@@ -136,7 +134,6 @@ func mockFetchMatchesEndpoint(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Successfully Opened users.json")
 
 	defer jsonFile.Close()
 
@@ -162,7 +159,6 @@ func mockFetchMatchesEndpoint2(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Successfully Opened users.json")
 
 	defer jsonFile.Close()
 
@@ -238,7 +234,7 @@ func TestCustomClient_FetchTournaments(t *testing.T) {
 				return New(baseURL, username, apiKey, client)
 			}(server.URL, MOCK_API_USERNAME, MOCK_API_KEY, http.DefaultClient),
 			wantData: nil,
-			wantErr:  fmt.Errorf("%w. %s", ErrServerProblem, http.StatusText(http.StatusNotFound)),
+			wantErr:  fmt.Errorf("%w. %s", ErrNoData, http.StatusText(http.StatusNotFound)),
 		},
 	}
 
