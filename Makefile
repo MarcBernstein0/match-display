@@ -10,5 +10,7 @@ docker_build:
 docker_run: 
 	docker run --env-file .env -p 8080:8080 match-display
 
-
 run_container: build docker_build docker_run
+
+docker_compose:
+	docker compose --env-file .env up 

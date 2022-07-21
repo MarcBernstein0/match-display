@@ -6,5 +6,7 @@ services:
       dockerfile: ./container/Dockerfile
     ports: 
       - "8080:8080"
-    env_file:
-      - .env
+    environment:
+      - USER_NAME=${USER_NAME}
+      - API_KEY=${API_KEY}
+      - GIN_MODE=${GIN_MODE}
