@@ -13,4 +13,4 @@ docker_run:
 run_container: build docker_build docker_run
 
 docker_compose:
-	docker compose --env-file .env up 
+	docker compose up 
