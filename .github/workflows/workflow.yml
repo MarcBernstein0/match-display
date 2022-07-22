@@ -10,6 +10,7 @@ on:
 
 env:
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  HEROKU_EMAIL: ${{ secrets.HEROKU_API_KEY }}
 # Workflow jobs
 jobs:
 
@@ -22,12 +23,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    # Build Docker Image
-    - name: Docker Build and Deploy
-      run: docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
-
     # PUSH the Docker image to Heroku Container Reistry
-    - name: Publish
+    - name: Docker Build and Deploy Publish
       env:
         WORKDIR: "."
         DOCKERFILE_NAME: "./container/Dockerfile"
@@ -37,11 +34,12 @@ jobs:
         API_KEY: ${{ secrets.CHALLONGE_API_KEY }}
         GIN_RELEASE: $${{ secrets.RELEASE }}
       run: |
+        docker login --username=${HEROKU_EMAIL} --password=${HEROKU_API_KEY} registry.heroku.com
         docker build --file ${DOCKERFILE_NAME} \
           ${DOCKER_OPTIONS} \
           --tag registry.heroku.com/${APP_NAME}/web .
-        heroku container:push web -a $APP_NAME
-        heroku container:release web -a $APP_NAME
+        heroku container:push web -a ${APP_NAME}
+        heroku container:release web -a ${APP_NAME}
 # jobs:
 #   build:
 #     runs-on: ubuntu-latest
