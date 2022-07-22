@@ -38,7 +38,7 @@ jobs:
         docker build --file ${DOCKERFILE_NAME} \
           ${DOCKER_OPTIONS} \
           --tag registry.heroku.com/${APP_NAME}/web .
-        heroku container:push web -a ${APP_NAME}
+        docker push registry.heroku.com/${APP_NAME}/web
         heroku container:release web -a ${APP_NAME}
 # jobs:
 #   build:
