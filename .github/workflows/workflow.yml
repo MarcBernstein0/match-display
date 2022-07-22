@@ -41,4 +41,5 @@ jobs:
         docker push registry.heroku.com/${APP_NAME}/web
         heroku config:set USER_NAME=${USER_NAME} -a ${APP_NAME}
         heroku config:set API_KEY=${API_KEY} -a ${APP_NAME}
+        heroku config:set GIN_MODE=${GIN_RELEASE} -a ${APP_NAME}
         heroku container:release web -a ${APP_NAME}
