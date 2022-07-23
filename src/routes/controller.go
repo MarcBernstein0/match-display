@@ -9,13 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JSONMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Next()
-	}
-}
-
 func HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "UP",

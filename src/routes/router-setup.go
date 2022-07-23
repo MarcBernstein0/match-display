@@ -9,6 +9,7 @@ func RouteSetup(fetchData mainlogic.FetchData) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(JSONMiddleware())
+	r.Use(CORSMiddleware())
 	r.GET("/health", HealthCheck)
 	r.GET("/matches", MatchesGET(fetchData))
 
