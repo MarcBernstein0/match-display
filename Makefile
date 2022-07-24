@@ -8,6 +8,6 @@ docker_build:
 	docker build -t match-display -f ./container/Dockerfile .
 
 docker_run: 
-	docker run --env-file .env -p 8080:8080 match-display
+	docker run --rm --env-file .env -p 8080:8080 match-display
 
 run_container: docker_build docker_run
