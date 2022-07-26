@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"sort"
 	"time"
 
 	mainlogic "github.com/MarcBernstein0/match-display/src/main-logic"
@@ -66,6 +67,10 @@ func MatchesGET(fetchData mainlogic.FetchData) gin.HandlerFunc {
 		}
 		// fmt.Printf("list of matches %+v\n", matches)
 		// return matches
+		sort.SliceStable(matches, func(i, j int) bool {
+			return matches[i].GameName <= matches[j].GameName
+		})
+
 		c.JSON(http.StatusOK, matches)
 	}
 	return fn
